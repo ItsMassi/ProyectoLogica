@@ -17,18 +17,21 @@ join(Grid, _NumOfColumns, _Path, RGrids):-
 
 %Funcion Obtener
 %Caso base :
-ObtenerIndice([X |Xs],Num) :- Num is 	(X*5)+Xs
+obtenerIndice([X |Xs],Num) :-  Num is (X*5)+Xs.
 %Caso Base: La lista de listas de posiciones esta vacia.
-FuncionOrdenar([[]],Col,[R |Rs],[])
+funcionOrdenar([],Col,P,L) :- sort(P,L).
 % 1) Caso recursivo :
-FuncionOrdenar([X|Xs],Col,[],_listaVacia) :-
-	FuncionOrdenar([X|Xs],Col,[Pos]) Pos is  
+funcionOrdenar([X|Xs],Col,P,L) :- 
+	obtenerIndice(X,Pos) ,
+	append(P,[Pos],Q) ,
+	funcionOrdenar(Xs,Col,Q,L).
+	
 
 
-%1 Etapa de la funcionalidad del juego)
+%1 Etapa de la funcionalidad del juego).
 %EliminandoBloques(Grid ,Columnas , Camino , Retorno)
 %Caso base 1 :
 EliminandoBloques([E] ,Col,_Path,_Retorno)
 %Caso Recursivo :
-EliminandoBloques([E |Es],Col,[[P|Ps]],[R |Rs]) :- 
-	EliminandoBloques([Es] ,Col,[[Ps]],[R |Rs]) ,
+eliminandoBloques([E |Es],Col,[[P|Ps]],[R |Rs]) :- 
+	eliminandoBloques([Es] ,Col,[[Ps]],[R |Rs]) .
