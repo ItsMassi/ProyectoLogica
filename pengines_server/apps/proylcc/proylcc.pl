@@ -26,12 +26,11 @@ funcionOrdenar([X|Xs],Col,P,L) :-
 	append(P,[Pos],Q) ,
 	funcionOrdenar(Xs,Col,Q,L).
 	
-
-
 %1 Etapa de la funcionalidad del juego).
 %EliminandoBloques(Grid ,Columnas , Camino , Retorno)
 %Caso base 1 :
-EliminandoBloques([E] ,Col,_Path,_Retorno)
-%Caso Recursivo :
-eliminandoBloques([E |Es],Col,[[P|Ps]],[R |Rs]) :- 
-	eliminandoBloques([Es] ,Col,[[Ps]],[R |Rs]) .
+eliminandoBloques([],T ,Copia).
+%Caso Recursivo  1:
+eliminandoBloques([L |Ls],[L |T],Copia) :- append(Copia,[0],Q), eliminandoBloques(Ls,T,Q).
+%Caso Recursivo 2:
+	eliminandoBloques(L, [H |T],Copia):-append(Copia,[H],Q) ,eliminandoBloques(L,T,Q).
