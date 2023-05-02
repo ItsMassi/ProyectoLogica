@@ -1,9 +1,6 @@
 :- module(proylcc, [
 		join/4
 		
-		%obtenerIndice/4,
-		
-		%funcionOrdenar/5
 
 
 	]).
@@ -16,18 +13,20 @@
  */ 
 
 join(Grid, _NumOfColumns, Path, RGrids):-
-	%eliminandoBloques(Path,Grid, RGrids).
+	eliminandoBloques(Path,Grid, RGrids).
 
-%Funcion Obtener
-%Caso base :
-obtenerIndice([X |Xs],Num) :-  Num is (X*5)+Xs.
-%Caso Base: La lista de listas de posiciones esta vacia.
-funcionOrdenar([],Col,P,L) :- sort(P,L).
-% 1) Caso recursivo :
-funcionOrdenar([X|Xs],Col,P,L) :- 
-	obtenerIndice(X,Pos) ,
-	append(P,[Pos],Q) ,
-	funcionOrdenar(Xs,Col,Q,L).
+obtenerIndice([X|Xs], Num) :- Num is (X*5) + Xs.
+
+funcionOrdenar([X|Xs], Col, P, L) :-
+	obtenerIndice(X, Pos),
+	append(P, [Pos], Q),
+	funcionOrdenar(Xs, Col, Q, NewL),
+	L = NewL.
+	
+funcionOrdenar([], Col, P, L) :-
+	sort(P, NewL),
+	write(NewL),
+	L = NewL.
 	
 %1 Etapa de la funcionalidad del juego).
 % eliminandoBloquesBShell/3 using an accumulator
