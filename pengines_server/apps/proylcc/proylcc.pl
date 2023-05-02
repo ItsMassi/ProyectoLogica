@@ -1,6 +1,11 @@
-:- module(proylcc, 
-	[  
+:- module(proylcc, [
 		join/4
+		
+		%obtenerIndice/4,
+		
+		%funcionOrdenar/5
+
+
 	]).
 
 
@@ -10,10 +15,8 @@
  * en la grilla Grid, con número de columnas NumOfColumns. El número 0 representa que la celda está vacía. 
  */ 
 
-join(Grid, _NumOfColumns, _Path, RGrids):-
-	Grid = [N | Ns],	% La implementación actual es simplemente a modo de muestra, y no tiene sentido, debe reepmplazarla
-	N2 is N * 2,		% por una implementación válida.
-	RGrids = [[0 | Ns], [N2 | Ns]].
+join(Grid, _NumOfColumns, Path, RGrids):-
+	%eliminandoBloques(Path,Grid, RGrids).
 
 %Funcion Obtener
 %Caso base :
@@ -27,10 +30,32 @@ funcionOrdenar([X|Xs],Col,P,L) :-
 	funcionOrdenar(Xs,Col,Q,L).
 	
 %1 Etapa de la funcionalidad del juego).
-%EliminandoBloques(Grid ,Columnas , Camino , Retorno)
-%Caso base 1 :
-eliminandoBloques([],T ,Copia).
-%Caso Recursivo  1:
-eliminandoBloques([L |Ls],[L |T],Copia) :- append(Copia,[0],Q), eliminandoBloques(Ls,T,Q).
-%Caso Recursivo 2:
-	eliminandoBloques(L, [H |T],Copia):-append(Copia,[H],Q) ,eliminandoBloques(L,T,Q).
+% eliminandoBloquesBShell/3 using an accumulator
+eliminandoBloquesBShell(L, T, Copia) :-
+    eliminandoBloquesB(L, T, [], Copia, 0).
+
+eliminandoBloquesB([], T, Acc, Copia, _) :-
+    write('caso base 1'), 
+    append(Acc, [], Copia).
+
+eliminandoBloquesB([Cont], T, Acc, Copia, Cont) :-
+    write('caso base 2'),
+    write(Cont),
+    append(Acc, [1], NewAcc),
+    ContAux is Cont + 1,
+    eliminandoBloquesB([], T, NewAcc, Copia, ContAux).
+
+eliminandoBloquesB([Cont|Ls], [H|T], Acc, Copia, Cont) :-
+    write('Recursivo 1'),
+    write(Cont),
+    append(Acc, [0], NewAcc),
+    ContAux is Cont + 1,
+    eliminandoBloquesB(Ls, T, NewAcc, Copia, ContAux).
+
+eliminandoBloquesB(L, [H|T], Acc, Copia, Cont) :-
+    write('Recursivo 2'),
+    write(Cont),
+    write(L),
+    append(Acc, [H], NewAcc),
+    ContAux is Cont + 1,
+    eliminandoBloquesB(L, T, NewAcc, Copia, ContAux).
