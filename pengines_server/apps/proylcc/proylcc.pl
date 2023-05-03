@@ -16,7 +16,7 @@
  * RGrids es la lista de grillas representando el efecto, en etapas, de combinar las celdas del camino Path
  * en la grilla Grid, con número de columnas NumOfColumns. El número 0 representa que la celda está vacía. 
  */ 
-
+enlazarGrilla(L1, L2,[L1,L2]).
  
 
 obtenerIndice([X|Xs], Num) :- Num is (X*5) + Xs.
@@ -56,7 +56,10 @@ eliminandoBloquesB(L, [H|T], Acc, Copia, Cont) :-
     ContAux is Cont + 1,
     eliminandoBloquesB(L, T, NewAcc, Copia, ContAux).
 
+
+
 join(Grid, Col, Path, RGrids):-
-    funcionOrdenar(Grid,Col,Path,L),
-    eliminandoBloquesBShell(L,Grid,RGrids).
+    funcionOrdenar(Path,Col,Aux,L),
+    eliminandoBloquesBShell(L,Grid,GRetorno),
+    enlazarGrilla(Grid,GRetorno,RGrids).
     
