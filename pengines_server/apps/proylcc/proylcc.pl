@@ -30,21 +30,24 @@ funcionOrdenar([X|Xs], Col, P, L) :- %L es la Lista resultante
 funcionOrdenar([], Col, P, L) :-
 	sort(P, NewL),
 	L = NewL.
+
 	
 %1 Etapa de la funcionalidad del juego).
 % eliminandoBloquesBShell/3 using an accumulator
 eliminandoBloquesBShell(L, T, Copia) :-
     
  eliminandoBloquesB(L, T, [], Copia, 0).
+eliminandoBloquesB([] , [],Acc , Copia, _) :- append(Acc , [],Copia).
 
-eliminandoBloquesB([], T, Acc, Copia, _) :-
- 
-    append(Acc, [], Copia).
+eliminandoBloquesB([], [T|Ts], Acc, Copia, _) :-
+    append(Acc , [T], NewAcc),
+    eliminandoBloquesB([],Ts, NewAcc,Copia,_).
+    
 
-eliminandoBloquesB([Cont], T, Acc, Copia, Cont) :-
+eliminandoBloquesB([Cont], [_|Ts], Acc, Copia, Cont) :-
     append(Acc, [1], NewAcc),
     ContAux is Cont + 1,
-    eliminandoBloquesB([], T, NewAcc, Copia, ContAux).
+    eliminandoBloquesB([], Ts, NewAcc, Copia, ContAux).
 
 eliminandoBloquesB([Cont|Ls], [H|T], Acc, Copia, Cont) :-
     append(Acc, [0], NewAcc),
@@ -56,6 +59,7 @@ eliminandoBloquesB(L, [H|T], Acc, Copia, Cont) :-
     ContAux is Cont + 1,
     eliminandoBloquesB(L, T, NewAcc, Copia, ContAux).
 
+%Segunda etapa del Juego
 
 
 join(Grid, Col, Path, RGrids):-
