@@ -1,7 +1,7 @@
 :- module(proylcc, [
-		join/4,
         obtenerIndice/2,
-        eliminandoBloquesB/5
+        eliminandoBloquesB/5,
+        join/4
 		
 
 
@@ -14,9 +14,7 @@
  * en la grilla Grid, con número de columnas NumOfColumns. El número 0 representa que la celda está vacía. 
  */ 
 
-join(Grid, Col, Path, RGrids):-
-	funcionOrdenar(Grid,Col,Path,L),
-    eliminandoBloquesBShell(L,Grid,RGrids).
+ 
 
 obtenerIndice([X|Xs], Num) :- Num is (X*5) + Xs.
 
@@ -33,7 +31,8 @@ funcionOrdenar([], Col, P, L) :-
 %1 Etapa de la funcionalidad del juego).
 % eliminandoBloquesBShell/3 using an accumulator
 eliminandoBloquesBShell(L, T, Copia) :-
-    eliminandoBloquesB(L, T, [], Copia, 0).
+    
+ eliminandoBloquesB(L, T, [], Copia, 0).
 
 eliminandoBloquesB([], T, Acc, Copia, _) :-
  
@@ -53,3 +52,8 @@ eliminandoBloquesB(L, [H|T], Acc, Copia, Cont) :-
     append(Acc, [H], NewAcc),
     ContAux is Cont + 1,
     eliminandoBloquesB(L, T, NewAcc, Copia, ContAux).
+
+join(Grid, Col, Path, RGrids):-
+    funcionOrdenar(Grid,Col,Path,L),
+    eliminandoBloquesBShell(L,Grid,RGrids).
+    
