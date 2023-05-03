@@ -1,7 +1,7 @@
 :- module(proylcc, [
 		join/4,
         obtenerIndice/2,
-        eliminandoBloquesB/4
+        eliminandoBloquesB/5
 		
 
 
