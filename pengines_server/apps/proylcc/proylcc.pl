@@ -1,5 +1,7 @@
 :- module(proylcc, [
         obtenerIndice/2,
+        funcionOrdenar/4,
+        eliminandoBloquesBShell/3,
         eliminandoBloquesB/5,
         append/3,
         join/4
