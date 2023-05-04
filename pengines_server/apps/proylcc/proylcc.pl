@@ -60,6 +60,42 @@ eliminandoBloquesB(L, [H|T], Acc, Copia, Cont) :-
     eliminandoBloquesB(L, T, NewAcc, Copia, ContAux).
 
 %Segunda etapa del Juego
+generarColumnaShell(L,ColNum,Resultado):-
+    length(L,Largo),
+    generarColumna(L,ColNum,Largo,[],Resultado).
+
+generarColumna([], ColNum, Largo, Acc, Resultado):- %caso base
+    Resultado = Acc.%gruardamos el resultado de la lista de columna
+
+generarColumna(L, ColNum, Largo, Acc, Resultado):- 
+    %Acc es una lista Acumulativa (auxiliar) que va a guardar las instancias 
+    %intermedias de la lista final
+    %
+    %la idea es usar ColNum como indice
+    nth0(ColNum,L,Valor),%sacamos el valor del exponente ColNum
+    append(Acc,[Valor],Q),%lo agregamos al final de la lista Acc
+    NuevoColNum is ColNum + 5, %calculamos el nuevo indice
+    (NuevoColNum >= Largo -> % si el indice es no esta en la lista
+    generarColumna([],_,_,Q,Resultado);%Termina
+    generarColumna(L,NuevoColNum,Largo,Q,Resultado)).%caso contrario continua a agregar otro valor.
+
+%generarListasDeListas: Retorna una lista que contiene la lista de elementos por Columnas de la Grid
+
+generarListasDeListas(L1,Retorno ) :-
+    generarColumnaShell(L1,0,R1),
+	generarColumnaShell(L1,1,R2),
+	append([R1],[R2],Resultado1),
+	generarColumnaShell(L1,2,R3),
+	append(Resultado1,[R3],Resultado2),
+	generarColumnaShell(L1,3,R4),
+	append(Resultado2,[R4],Resultado3),
+	generarColumnaShell(L1,4,R5),
+	append(Resultado3,[R5],Resultado4),
+    Retorno=Resultado4.
+
+
+    
+
 
 
 join(Grid, Col, Path, RGrids):-
