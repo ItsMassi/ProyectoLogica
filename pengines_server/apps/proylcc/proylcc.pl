@@ -4,6 +4,12 @@
         eliminandoBloquesBShell/3,
         eliminandoBloquesB/5,
         append/3,
+        generarColumnaShell/3,
+        generarColumna/5,
+        generarListasDeListas/2,
+        gravedad/3,
+        agregarShell/2,
+        agregarLista/7,
         join/4
 		
 
@@ -16,7 +22,8 @@
  * RGrids es la lista de grillas representando el efecto, en etapas, de combinar las celdas del camino Path
  * en la grilla Grid, con número de columnas NumOfColumns. El número 0 representa que la celda está vacía. 
  */ 
-enlazarGrilla(L1, L2,[L1,L2]).
+enlazarGrilla(L1, L2,Resultado) :-
+    append(L1,L2,Resultado).
  
 
 obtenerIndice([X|Xs], Num) :- Num is (X*5) + Xs.
@@ -65,7 +72,7 @@ generarColumnaShell(L,ColNum,Resultado):-
     generarColumna(L,ColNum,Largo,[],Resultado).
 
 generarColumna([], ColNum, Largo, Acc, Resultado):- %caso base
-    Resultado = Acc.%gruardamos el resultado de la lista de columna
+    gravedad(Acc,X,Resultado). %gruardamos el resultado de la lista de columna
 
 generarColumna(L, ColNum, Largo, Acc, Resultado):- 
     %Acc es una lista Acumulativa (auxiliar) que va a guardar las instancias 
@@ -107,6 +114,26 @@ gravedad([C|Cs],Acc,ResultadoC):-%caso recursivo
     gravedad(Cs,Acc,ResultadoC)). %si C es diferente de 0 agregalo al acumulador.
 
 
+%Funcion AgregarShell : Recibe una Lista de Listas de columnas y retorna como resultado la grid Resultante (Este metodo se utiliza despues de haber usado la funcion generarListasDeListas)
+    agregarShell(S, GR) :-
+        nth0(0,S,L1),
+        nth0(1,S,L2),
+        nth0(2,S,L3),
+        nth0(3,S,L4),
+        nth0(4,S,L5),
+       agregarLista(L1,L2,L3,L4,L5,[],GR).
+   
+   agregarLista([],[],[],[],[],Acc,GR):- 
+       GR=Acc.
+   agregarLista([L1|L1S],[L2|L2S],[L3|L3S],[L4|L4S],[L5|L5S],Acc, GR) :-
+       append(Acc,[L1],Q),
+       append(Q,[L2],Q2),
+       append(Q2,[L3],Q3),
+       append(Q3,[L4],Q4),
+       append(Q4,[L5],Q5),
+       agregarLista(L1S,L2S,L3S,L4S,L5S,Q5,GR).
+
+
     
 
 
@@ -114,5 +141,8 @@ gravedad([C|Cs],Acc,ResultadoC):-%caso recursivo
 join(Grid, Col, Path, RGrids):-
     funcionOrdenar(Path,Col,Aux,L),
     eliminandoBloquesBShell(L,Grid,GRetorno),
-    enlazarGrilla(Grid,GRetorno,RGrids).
-    
+    enlazarGrilla([Grid],[GRetorno],RG),
+    generarListasDeListas(GRetorno,Gresultante),
+    agregarShell(Gresultante,Resultado),
+    enlazarGrilla(RG,[Resultado],RGrids).
+
