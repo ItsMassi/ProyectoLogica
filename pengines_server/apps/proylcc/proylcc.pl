@@ -93,6 +93,19 @@ generarListasDeListas(L1,Retorno ) :-
 	append(Resultado3,[R5],Resultado4),
     Retorno=Resultado4.
 
+%gravedad genera una lista donde los ceros fueron movidos adelante (arriba en la grilla)
+%recibe: Una Columna (Lista), [], Y la variable de retorno
+gravedad([],Acc,ResultadoC):-%caso base
+    length(Acc,LargoAcc),
+    NumCero is 8 - LargoAcc,%numero de Ceros
+    length(CeroList, NumCero), findall(0, between(1, NumCero, _), CeroList),%generamos una lista de 0s
+    append(CeroList,Acc,Q),%ponemos los ceros delante
+    ResultadoC = Q.
+
+gravedad([C|Cs],Acc,ResultadoC):-%caso recursivo
+    ( C =\= 0 ->  append(Acc,[C],Q),gravedad(Cs,Q,ResultadoC);
+    gravedad(Cs,Acc,ResultadoC)). %si C es diferente de 0 agregalo al acumulador.
+
 
     
 
