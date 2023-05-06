@@ -133,6 +133,42 @@ gravedad([C|Cs],Acc,ResultadoC):-%caso recursivo
        append(Q4,[L5],Q5),
        agregarLista(L1S,L2S,L3S,L4S,L5S,Q5,GR).
 
+    %Metodo menorPotencia
+    %metodo auxiliar que te devuelve: Resultado = 2^N
+potenciaDos(0,1).
+potenciaDos(N,Resultado) :-
+    N > 0,
+    N1 is N-1,
+    potenciaDos(N1,R1),
+    Resultado is 2*R1.
+
+%Este metodo auxiliar te ayuda a buscar la menor potencia dentro de una
+%lista L, empieza por debajo en 2^1 y luego aumenta hasta encontrar la menor
+menorPotencia(Cont,Resultado,[]):-%caso base
+    potenciaDos(Cont,Resultado).%guardamos la menor potencia de dos
+
+menorPotencia(Cont,Resultado,L):- %caso recursivo
+    potenciaDos(Cont,Check),%buscamos la menor potencia de dos
+    Cont2 is Cont+1,
+    %if ( la potencia esta dentro de L, mandalo a caso base (termina),
+    %caso contrario continua
+    ( member(Check,L) ->  menorPotencia(Cont,Resultado,[]);
+                          menorPotencia(Cont2,Resultado,L)).
+
+%Metodo reemplazarPorRandom : Recorro la grilla hasta encontrar un 0 , cuando encuentro un 0
+% reemplazo el 0 por un random , sino  es un 0 dejo el numero como esta
+
+reemplazarPorRandom([],Acc,Retorno) :-
+    Retorno=Acc.
+
+reemplazarPorRandom([G|Gs],Acc,Retorno):-
+      potenciaDos(1,Num),
+     ( G =\= 0 -> append(Acc,[G],Q) ,reemplazarPorRandom(Gs,Q,Retorno);
+     append(Acc,[Num],R),
+     reemplazarPorRandom(Gs,R,Retorno)).
+
+
+
 
     
 
