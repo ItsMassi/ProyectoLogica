@@ -10,6 +10,9 @@
         gravedad/3,
         agregarShell/2,
         agregarLista/7,
+        potenciaDos/2,
+        menorPotencia/3,
+        reemplazarPorRandom/3,
         join/4
 		
 
@@ -180,5 +183,7 @@ join(Grid, Col, Path, RGrids):-
     enlazarGrilla([Grid],[GRetorno],RG),
     generarListasDeListas(GRetorno,Gresultante),
     agregarShell(Gresultante,Resultado),
-    enlazarGrilla(RG,[Resultado],RGrids).
+    enlazarGrilla(RG,[Resultado],RG2),
+    reemplazarPorRandom(Resultado,Acc,Re),
+    enlazarGrilla(RG2,[Re],RGrids).
 
