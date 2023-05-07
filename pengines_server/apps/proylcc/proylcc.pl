@@ -158,6 +158,10 @@ menorPotencia(Cont,Resultado,L):- %caso recursivo
     ( member(Check,L) ->  menorPotencia(Cont,Resultado,[]);
                           menorPotencia(Cont2,Resultado,L)).
 
+%Metodo para generar numeros random
+generarRandom(X):-
+    random(1,6,X).
+
 %Metodo reemplazarPorRandom : Recorro la grilla hasta encontrar un 0 , cuando encuentro un 0
 % reemplazo el 0 por un random , sino  es un 0 dejo el numero como esta
 
@@ -165,7 +169,8 @@ reemplazarPorRandom([],Acc,Retorno) :-
     Retorno=Acc.
 
 reemplazarPorRandom([G|Gs],Acc,Retorno):-
-      potenciaDos(1,Num),
+    generarRandom(X),
+      potenciaDos(X,Num),
      ( G =\= 0 -> append(Acc,[G],Q) ,reemplazarPorRandom(Gs,Q,Retorno);
      append(Acc,[Num],R),
      reemplazarPorRandom(Gs,R,Retorno)).
