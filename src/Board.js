@@ -3,6 +3,7 @@ import Square from './Square';
 import Connector from './Connector';
 import { valueInPos, numberToColor, connectionInPath, posInPath, isAdyacent, equalPos } from './util';
 
+
 function Board({ grid, numOfColumns, path, onPathChange, onDone }) {
 
     function onSquareClick(pos) {
@@ -122,5 +123,6 @@ function Board({ grid, numOfColumns, path, onPathChange, onDone }) {
     );
 
 }
+
 
 export default Board;

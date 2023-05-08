@@ -3,6 +3,7 @@ import PengineClient from './PengineClient';
 import Board from './Board';
 import { joinResult } from './util';
 
+
 let pengine;
 
 function Game() {
@@ -68,7 +69,7 @@ function Game() {
     */
     const gridS = JSON.stringify(grid);
     const pathS = JSON.stringify(path);
-    const queryS = "join(" + gridS + "," + numOfColumns + "," + pathS + ", RGrids)";
+    const queryS = "join(" + gridS + "," + numOfColumns + "," + pathS + ", RGrids)"; //Hacer la constante para el boton booster
     setWaiting(true);
     pengine.query(queryS, (success, response) => {
       if (success) {
@@ -103,7 +104,9 @@ function Game() {
   return (
     <div className="game">
       <div className="header">
+        <div> </div>
         <div className="score">{score}</div>
+        <button className="botonBooster">Booster</button>
       </div>
       <Board
         grid={grid}
@@ -115,5 +118,6 @@ function Game() {
     </div>
   );
 }
+
 
 export default Game;

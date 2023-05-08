@@ -175,7 +175,85 @@ reemplazarPorRandom([G|Gs],Acc,Retorno):-
      append(Acc,[Num],R),
      reemplazarPorRandom(Gs,R,Retorno)).
 
+% Caso base: lista vacía de vecinos
+% Si la lista de vecinos esta vacia, significa que ya se visitaron todos los nodos alcanzables
+dfs(_, [], _, Visitados, Visitados).
 
+% Caso recursivo: explorar el primer vecino y continuar con el resto
+% En caso contrario, se explora el primer vecino, se añade a los visitados y se busca los vecinos de este vecino.
+% Luego se hace una llamada recursiva a dfs con la lista de vecinos encontrados del vecino actual,
+% junto con los demas vecinos pendientes.
+dfs(Grid, [Vecino|Vecinos],MinPot, Visitados, VisitadosFinales) :-
+    (member(Vecino, Visitados) ->
+        dfs(Grid, Vecinos, MinPot, Visitados, VisitadosFinales)
+    ;
+        append(Visitados, [Vecino],NuevosVisitados),
+        explore_neighbors(Grid, Vecino, MinPot,VecinosVecino),
+        dfs(Grid, VecinosVecino, MinPot, NuevosVisitados, VisitadosDespuesVecinos),
+        dfs(Grid, Vecinos, MinPot,VisitadosDespuesVecinos, VisitadosFinales)
+    ).
+
+% Predicado auxiliar para comprobar si un movimiento es válido
+movimiento_valido(Grid, MinPot, Indice) :-
+    Indice >= 0,
+    length(Grid, L),
+    Indice < L,
+    nth0(Indice, Grid, MinPot).
+
+% Predicado auxiliar para explorar vecinos
+%  Busca los vecinos del indice dado, verifica si son movimientos validos 
+%  y los devuelve en una lista
+explore_neighbors(Grid, Indice, MinPot,Vecinos) :-
+    Arriba is Indice - 5,
+    Abajo is Indice + 5,
+    Izquierda is Indice - 1,
+    Derecha is Indice + 1,
+    % Esta lista contiene los índices de los nodos que están por encima, por debajo, 
+    % a la izquierda y a la derecha del nodo actual, respectivamente.
+    findall(N, (
+        member(N, [Arriba, Abajo, Izquierda, Derecha]),
+        movimiento_valido(Grid, MinPot,N)
+    ), Vecinos).
+
+%Tercer etapa del proyecto : Booster
+% Predicado principal para ejecutar DFS desde el índice A
+% buscando los vecinos validos y visitando aquellos que no se hayan visitado.
+% Retorna una lista con los indices visitados
+dfs_desde_a(Grid, A, MinPot, VisitadosFinales) :-
+    explore_neighbors(Grid, A, MinPot,Vecinos),
+    dfs(Grid, Vecinos, MinPot, [A], VisitadosFinales).
+
+%caso base de la ejecucion de booster hasta 40 tamaño de la lista
+booster(_,40,Acumulador,VisitadosFinales):-
+    VisitadosFinales = Acumulador.
+
+% Funcion recursiva que ejecuta dfs_desde_a en cada indice desde
+% el 0 hasta el 40
+booster(Grid,Indice,Acumulador,VisitadosFinales):-
+    menorPotencia(1,MinPot,Grid),
+    dfs_desde_a(Grid,Indice,MinPot,Indices),
+    %si el valor del indice es MinPut agrega este valor actual
+    %caso contrario no egreges el indice actual
+    (nth0(Indice,Grid,MinPot) -> append(Acumulador,Indices,ListaIndices);
+                                    [_|Ts] = Indices, append(Acumulador,Ts,ListaIndices)),
+    list_to_set(ListaIndices,IndicesSinRepetir),
+    IndiceB is Indice + 1,
+    booster(Grid,IndiceB,IndicesSinRepetir, VisitadosFinales).
+
+boosterShell(Grid,IndicesBooster):-
+    booster(Grid,0,[],Indices),
+    sort(Indices, IndicesBooster).
+
+botonBooster(Grid,Col,Path,RGrids) :-
+    
+    boosterShell(Grid ,ListaIndices),
+    eliminandoBloquesBShell(ListaIndices,Grid,GRet),
+    enlazarGrilla([Grid],[GRet],RGr),
+    generarListasDeListas(GRet,Gresultado),
+    agregarShell(Gresultado,Retorna),
+    enlazarGrilla(RGr0,[Result],RGr1),
+    reemplazarPorRandom(Result,Acumulador,Resultante),
+    enlazarGrilla(RGrid2,[Resultante],RGrids).
 
 
     
@@ -183,12 +261,14 @@ reemplazarPorRandom([G|Gs],Acc,Retorno):-
 
 
 join(Grid, Col, Path, RGrids):-
-    funcionOrdenar(Path,Col,Aux,L),
-    eliminandoBloquesBShell(L,Grid,GRetorno),
-    enlazarGrilla([Grid],[GRetorno],RG),
-    generarListasDeListas(GRetorno,Gresultante),
-    agregarShell(Gresultante,Resultado),
-    enlazarGrilla(RG,[Resultado],RG2),
-    reemplazarPorRandom(Resultado,Acc,Re),
-    enlazarGrilla(RG2,[Re],RGrids).
+        funcionOrdenar(Path,Col,Aux,L),
+        eliminandoBloquesBShell(L,Grid,GRetorno),
+        enlazarGrilla([Grid],[GRetorno],RG),
+        generarListasDeListas(GRetorno,Gresultante),
+        agregarShell(Gresultante,Resultado),
+        enlazarGrilla(RG,[Resultado],RG2),
+        reemplazarPorRandom(Resultado,Acc,Re),
+        enlazarGrilla(RG2,[Re],RGrids).
+    
+ 
 
