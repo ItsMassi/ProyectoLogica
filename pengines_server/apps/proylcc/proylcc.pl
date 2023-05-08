@@ -1,8 +1,11 @@
 :- module(proylcc, [
         obtenerIndice/2,
         funcionOrdenar/4,
-        eliminandoBloquesBShell/3,
+        sumar/4,
+        enlazarGrilla/3,
+        eliminandoBloquesShell/3,
         eliminandoBloquesB/5,
+        eliminandoBloquesA/6,
         append/3,
         generarColumnaShell/3,
         generarColumna/5,
@@ -12,7 +15,19 @@
         agregarLista/7,
         potenciaDos/2,
         menorPotencia/3,
+        generarRandom/1,
         reemplazarPorRandom/3,
+        dfs/5,
+        movimiento_valido/3,
+        explore_neighbors/4,
+        obtenerVecinos/2,
+        dfs_desde_a/4,
+        booster/4,
+        boosterShell/2,
+        botonBooster/4,
+        log2/2,
+        potenciaDeDosAprox/2,
+
         join/4
 		
 
@@ -29,45 +44,78 @@ enlazarGrilla(L1, L2,Resultado) :-
     append(L1,L2,Resultado).
  
 
-obtenerIndice([X|Xs], Num) :- Num is (X*5) + Xs.
+obtenerIndice([X|[Xs|_]], Num) :- Num is (X*5) + Xs.
+%obtenerIndice([],_).
 
 funcionOrdenar([X|Xs], Col, P, L) :- %L es la Lista resultante
 	obtenerIndice(X, Pos),
 	append(P, [Pos], Q),
-	funcionOrdenar(Xs, Col, Q, NewL),
-	L = NewL.
-	
-funcionOrdenar([], Col, P, L) :-
-	sort(P, NewL),
-	L = NewL.
+	funcionOrdenar(Xs, Col, Q, L).
+
+%AGREGADO
+funcionOrdenar([[]|Xs], Col, P, L) :- %L es la Lista resultante
+	funcionOrdenar(Xs, Col, P, L).
 
 	
-%1 Etapa de la funcionalidad del juego).
-% eliminandoBloquesBShell/3 using an accumulator
-eliminandoBloquesBShell(L, T, Copia) :-
+funcionOrdenar([X|[]], _, P, L) :-
+    obtenerIndice(X, Pos),
+	sort(P, Sorted),
+    append([Pos],Sorted,NewL),
+	L = NewL.
+    %Funcion que te devuelve la potencia de 2 proximada a un numero.
+    log2(X, Log2X) :- Log2X is log(X) / log(2).
+
+    potenciaDeDosAprox(X, Y) :- log2(X, Log2X), Y is 2 ** ceil(Log2X).
+    %suma los valores de los indices del path, dentro de la grilla
+    sumar([],_,Acc,Bloque):-
+        Bloque = Acc.
+    sumar([I|Is],Grid,Acc,Bloque):-
+        nth0(I,Grid,Valor),
+        Aux is Acc + Valor,
+        potenciaDeDosAprox(Aux,Potencia),
+        sumar(Is,Grid,Potencia,Bloque).
     
- eliminandoBloquesB(L, T, [], Copia, 0).
-eliminandoBloquesB([] , [],Acc , Copia, _) :- append(Acc , [],Copia).
-
-eliminandoBloquesB([], [T|Ts], Acc, Copia, _) :-
-    append(Acc , [T], NewAcc),
-    eliminandoBloquesB([],Ts, NewAcc,Copia,_).
+    % eliminandoBloquesBShell/3 using an accumulator
+    %el eliminando bloques, el ultimos valor es un boolean para saber si ya se cambio el ultimo
+    eliminandoBloquesShell(L, T, Copia) :-
+     sumar(L,T,1,Res),
+     eliminandoBloquesA(L, T, [], Copia, 0, Res).
     
-
-eliminandoBloquesB([Cont], [_|Ts], Acc, Copia, Cont) :-
-    append(Acc, [1], NewAcc),
-    ContAux is Cont + 1,
-    eliminandoBloquesB([], Ts, NewAcc, Copia, ContAux).
-
-eliminandoBloquesB([Cont|Ls], [H|T], Acc, Copia, Cont) :-
-    append(Acc, [0], NewAcc),
-    ContAux is Cont + 1,
-    eliminandoBloquesB(Ls, T, NewAcc, Copia, ContAux).
-
-eliminandoBloquesB(L, [H|T], Acc, Copia, Cont) :-
-    append(Acc, [H], NewAcc),
-    ContAux is Cont + 1,
-    eliminandoBloquesB(L, T, NewAcc, Copia, ContAux).
+    eliminandoBloquesB([] , [],Acc , Copia, _) :- append(Acc , [],Copia).
+    
+    eliminandoBloquesB([], [T|Ts], Acc, Copia, _) :-
+        append(Acc , [T], NewAcc),
+        eliminandoBloquesB([],Ts, NewAcc,Copia,_).
+        
+    
+    eliminandoBloquesB([Cont], [_|Ts], Acc, Copia, Cont) :-
+        append(Acc, [0], NewAcc),
+        ContAux is Cont + 1,
+        eliminandoBloquesB([], Ts, NewAcc, Copia, ContAux).
+    
+    eliminandoBloquesB([Cont|Ls], [_|T], Acc, Copia, Cont) :-
+        append(Acc, [0], NewAcc),
+        ContAux is Cont + 1,
+        eliminandoBloquesB(Ls, T, NewAcc, Copia, ContAux).
+    
+    eliminandoBloquesB(L, [H|T], Acc, Copia, Cont) :-
+        append(Acc, [H], NewAcc),
+        ContAux is Cont + 1,
+        eliminandoBloquesB(L, T, NewAcc, Copia, ContAux).
+    
+    %-------------------------------------
+    %caso: busca el primer elemento de los indices y lo hace 999
+    
+    eliminandoBloquesA([Cont|Ls], [_|T], Acc, Copia, Cont,Res) :-
+        append(Acc, [Res], Aux),
+        append(Aux,T,NewAcc),
+        eliminandoBloquesB(Ls, NewAcc, [], Copia, 0).
+    
+    eliminandoBloquesA(L, [H|T], Acc, Copia, Cont,Res) :-
+        append(Acc, [H], NewAcc),
+        ContAux is Cont + 1,
+        eliminandoBloquesA(L, T, NewAcc, Copia, ContAux,Res).
+    
 
 %Segunda etapa del Juego
 generarColumnaShell(L,ColNum,Resultado):-
@@ -158,6 +206,8 @@ menorPotencia(Cont,Resultado,L):- %caso recursivo
     ( member(Check,L) ->  menorPotencia(Cont,Resultado,[]);
                           menorPotencia(Cont2,Resultado,L)).
 
+
+
 %Metodo para generar numeros random
 generarRandom(X):-
     random(1,6,X).
@@ -175,7 +225,7 @@ reemplazarPorRandom([G|Gs],Acc,Retorno):-
      append(Acc,[Num],R),
      reemplazarPorRandom(Gs,R,Retorno)).
 
-% Caso base: lista vacía de vecinos
+  % Caso base: lista vacía de vecinos
 % Si la lista de vecinos esta vacia, significa que ya se visitaron todos los nodos alcanzables
 dfs(_, [], _, Visitados, Visitados).
 
@@ -204,18 +254,38 @@ movimiento_valido(Grid, MinPot, Indice) :-
 %  Busca los vecinos del indice dado, verifica si son movimientos validos 
 %  y los devuelve en una lista
 explore_neighbors(Grid, Indice, MinPot,Vecinos) :-
-    Arriba is Indice - 5,
-    Abajo is Indice + 5,
-    Izquierda is Indice - 1,
-    Derecha is Indice + 1,
+    obtenerVecinos(Indice,V),
     % Esta lista contiene los índices de los nodos que están por encima, por debajo, 
     % a la izquierda y a la derecha del nodo actual, respectivamente.
     findall(N, (
-        member(N, [Arriba, Abajo, Izquierda, Derecha]),
+        member(N, V),
         movimiento_valido(Grid, MinPot,N)
     ), Vecinos).
 
-%Tercer etapa del proyecto : Booster
+%recibe un indice Z y devuelve una lista de indices
+obtenerVecinos(Z, P) :-
+    % Make sure Z is valid (i.e., divisible by 5)
+    % Solve for X and Y
+    X is Z // 5,
+    Y is Z - (X * 5),
+    Arriba is X-1,
+    Abajo is X+1,
+    Derecha is Y+1,
+    Izquierda is Y-1,
+    (X=:=0 -> PosArriba = [] ; PosArriba = [Arriba,Y]),
+    (X=:=8 -> PosAbajo = [] ; PosAbajo = [Abajo,Y]),
+    (Y=:=4 -> PosDerecha = [] ; PosDerecha = [X,Derecha]),
+    (Y=:=0 -> PosIzquierda = [] ; PosIzquierda = [X,Izquierda]),
+    ((X=:=0;Y=:=0) -> PosArrIz = [] ; PosArrIz = [Arriba,Izquierda]),
+    ((X=:=0;Y=:=4) -> PosArrDr = [] ; PosArrDr = [Arriba,Derecha]),
+    ((X=:=4;Y=:=0) -> PosAbjIz = [] ; PosAbjIz = [Abajo,Izquierda]),
+    ((X=:=4;Y=:=4) -> PosAbjDr = [] ; PosAbjDr = [Abajo,Derecha]),
+    findall(N, (
+        member(N, [PosArriba,PosAbajo,PosDerecha,PosIzquierda,PosArrIz,PosArrDr,PosAbjIz,PosAbjDr]),
+        dif(N,[]))
+    , Vecinos),
+    funcionOrdenar(Vecinos,5,[],P).
+
 % Predicado principal para ejecutar DFS desde el índice A
 % buscando los vecinos validos y visitando aquellos que no se hayan visitado.
 % Retorna una lista con los indices visitados
@@ -242,27 +312,26 @@ booster(Grid,Indice,Acumulador,VisitadosFinales):-
 
 boosterShell(Grid,IndicesBooster):-
     booster(Grid,0,[],Indices),
-    sort(Indices, IndicesBooster).
+    sort(Indices, IndicesBooster).  
 
-botonBooster(Grid,Col,Path,RGrids) :-
+
+
+
+
+botonBooster(Grids,Col,Path,RGrid) :-
     
-    boosterShell(Grid ,ListaIndices),
-    eliminandoBloquesBShell(ListaIndices,Grid,GRet),
-    enlazarGrilla([Grid],[GRet],RGr),
+    boosterShell(Grids,ListaIndices),
+    eliminandoBloquesShell(ListaIndices,Grids,GRet),
+    enlazarGrilla([Grids],[GRet],RGr),
     generarListasDeListas(GRet,Gresultado),
     agregarShell(Gresultado,Retorna),
-    enlazarGrilla(RGr0,[Result],RGr1),
-    reemplazarPorRandom(Result,Acumulador,Resultante),
-    enlazarGrilla(RGrid2,[Resultante],RGrids).
-
-
-    
-
-
+    enlazarGrilla(RGr,[Retorna],RGr1),
+    reemplazarPorRandom(Retorna,Acumulador,Resultante),
+    enlazarGrilla(RGr1,[Resultante],RGrid).
 
 join(Grid, Col, Path, RGrids):-
         funcionOrdenar(Path,Col,Aux,L),
-        eliminandoBloquesBShell(L,Grid,GRetorno),
+        eliminandoBloquesShell(L,Grid,GRetorno),
         enlazarGrilla([Grid],[GRetorno],RG),
         generarListasDeListas(GRetorno,Gresultante),
         agregarShell(Gresultante,Resultado),

@@ -45,6 +45,23 @@ function Game() {
     setPath(newPath);
     console.log(JSON.stringify(newPath));
   }
+  function boosterHandler() {
+    
+    const gridS = JSON.stringify(grid);
+    const pathS = JSON.stringify(path);
+    const queryS = "botonBooster(" + gridS + "," + numOfColumns + "," + pathS + ", RGrids)"; //Hacer la constante para el boton booster
+    setWaiting(true);
+    pengine.query(queryS, (success, response) => {
+      if (success) {
+        setScore(score + joinResult(path, grid, numOfColumns));
+        setPath([]);
+        animateEffect(response['RGrids']);
+      } else {
+        setWaiting(false);
+      }
+    });
+  }
+  
 
   /**
    * Called when the user finished drawing a path in the grid.
@@ -106,7 +123,7 @@ function Game() {
       <div className="header">
         <div> </div>
         <div className="score">{score}</div>
-        <button className="botonBooster">Booster</button>
+        <button className="botonBooster" onClick={boosterHandler}>Booster</button>
       </div>
       <Board
         grid={grid}
@@ -118,6 +135,7 @@ function Game() {
     </div>
   );
 }
+
 
 
 export default Game;
