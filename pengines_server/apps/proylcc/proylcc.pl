@@ -124,7 +124,7 @@ eliminandoBloquesB(L, [H|T], Acc, Copia, Cont) :-
     eliminandoBloquesB(L, T, NewAcc, Copia, ContAux).
 
 %-------------------------------------
-%caso: busca el primer elemento de los indices y lo hace 999
+%caso: busca el primer elemento de los indices y le asigna el valor completo de la suma del path
 
 eliminandoBloquesA([Cont|Ls], [_|T], Acc, Copia, Cont,Res) :-
     append(Acc, [Res], Aux),
@@ -254,27 +254,27 @@ dfs(_, [], _, Visitados, Visitados).
 % Luego se hace una llamada recursiva a dfs con la lista de vecinos encontrados del vecino actual,
 % junto con los demas vecinos pendientes.
 dfs(Grid, [Vecino|Vecinos],MinPot, Visitados, VisitadosFinales) :-
-(member(Vecino, Visitados) ->
-    dfs(Grid, Vecinos, MinPot, Visitados, VisitadosFinales)
-;
-    append(Visitados, [Vecino],NuevosVisitados),
-    explore_neighbors(Grid, Vecino, MinPot,VecinosVecino),
-    dfs(Grid, VecinosVecino, MinPot, NuevosVisitados, VisitadosDespuesVecinos),
-    dfs(Grid, Vecinos, MinPot,VisitadosDespuesVecinos, VisitadosFinales)
-).
+    (member(Vecino, Visitados) ->
+        dfs(Grid, Vecinos, MinPot, Visitados, VisitadosFinales)
+    ;
+        append(Visitados, [Vecino],NuevosVisitados),
+        explore_neighbors(Grid, Vecino, MinPot,VecinosVecino),
+        dfs(Grid, VecinosVecino, MinPot, NuevosVisitados, VisitadosDespuesVecinos),
+        dfs(Grid, Vecinos, MinPot,VisitadosDespuesVecinos, VisitadosFinales)
+    ).
 
 % Predicado auxiliar para comprobar si un movimiento es válido
 movimiento_valido(Grid, MinPot, Indice) :-
-Indice >= 0,
-length(Grid, L),
-Indice < L,
-nth0(Indice, Grid, MinPot).
+    Indice >= 0,
+    length(Grid, L),
+    Indice < L,
+    nth0(Indice, Grid, MinPot).
 
 % Predicado auxiliar para explorar vecinos
 %  Busca los vecinos del indice dado, verifica si son movimientos validos 
 %  y los devuelve en una lista
 explore_neighbors(Grid, Indice, MinPot,Vecinos) :-
-obtenerVecinos(Indice,V),
+    obtenerVecinos(Indice,V),
 % Esta lista contiene los índices de los nodos que están por encima, por debajo, 
 % a la izquierda y a la derecha del nodo actual, respectivamente.
 findall(N, (
@@ -310,38 +310,66 @@ funcionOrdenar(Vecinos,5,[],P).
 % buscando los vecinos validos y visitando aquellos que no se hayan visitado.
 % Retorna una lista con los indices visitados
 dfs_desde_a(Grid, A, MinPot, VisitadosFinales) :-
-explore_neighbors(Grid, A, MinPot,Vecinos),
-dfs(Grid, Vecinos, MinPot, [A], VisitadosFinales).
+    explore_neighbors(Grid, A, MinPot,Vecinos),
+    dfs(Grid, Vecinos, MinPot, [A], VisitadosFinales).
 
 %caso base de la ejecucion de booster hasta 40 tamaño de la lista
 booster(_,40,Acumulador,VisitadosFinales):-
-VisitadosFinales = Acumulador.
+    VisitadosFinales = Acumulador.
 
 % Funcion recursiva que ejecuta dfs_desde_a en cada indice desde
 % el 0 hasta el 40
+%acumulador funciona como acumulador de lista de listas
 booster(Grid,Indice,Acumulador,VisitadosFinales):-
-menorPotencia(1,MinPot,Grid),
-dfs_desde_a(Grid,Indice,MinPot,Indices),
-%si el valor del indice es MinPut agrega este valor actual
-%caso contrario no egreges el indice actual
-(nth0(Indice,Grid,MinPot) -> append(Acumulador,Indices,ListaIndices);
-                                [_|Ts] = Indices, append(Acumulador,Ts,ListaIndices)),
-list_to_set(ListaIndices,IndicesSinRepetir),
-IndiceB is Indice + 1,
-booster(Grid,IndiceB,IndicesSinRepetir, VisitadosFinales).
+    %menorPotencia(1,MinPot,Grid),
+    nth0(Indice,Grid,ValorIndice),
+    dfs_desde_a(Grid,Indice,ValorIndice,Indices),
+    %si el valor del indice es MinPut agrega este valor actual
+    %caso contrario no egreges el indice actual
+    (nth0(Indice,Grid,ValorIndice) -> append([],Indices,ListaIndices);%corregir esto a no hacer nada
+                                    [_|Ts] = Indices, append([],Ts,ListaIndices)),
+    list_to_set(ListaIndices,IndicesSinRepetir),
+    sort(IndicesSinRepetir,IndicesOrdenados),
+    %write('Valor acumulador: '),write(Acumulador),nl,
+    %write('Valor Indice: '),write(Indice),nl,
+    %write('Valor IndicesOrdenados: '),write(IndicesOrdenados),nl,
+    (member(IndicesOrdenados,Acumulador) ->  append(Acumulador,[],ListaDeListas);
+    										append(Acumulador,[IndicesOrdenados],ListaDeListas)),
+    
+    %write('Valor ListaDeListas: '),write(ListaDeListas),nl,
+    %write('----------------------------'),nl,
+    IndiceB is Indice + 1,
+    booster(Grid,IndiceB,ListaDeListas, VisitadosFinales).
 
-boosterShell(Grid,IndicesBooster):-
-booster(Grid,0,[],Indices),
-sort(Indices, IndicesBooster).  
+boosterShell(Grid,GridResultado):-
+    booster(Grid,0,[],ListaGrupos),
+    eliminarGruposInvalidos(ListaGrupos,_Acc,GruposValidos),
+    generarGrillaFinalBooster(GruposValidos,Grid,GridResultado).
+    %sort(Indices, IndicesBooster).
 
+%elimina grupos de longitud n <= 1
+%[L|Ls] es la lista con los grupos de indices: [[1,2,3],[4],...]
+eliminarGruposInvalidos([],Acc,IndicesBooster):-
+    IndicesBooster = Acc.
+eliminarGruposInvalidos([L|Ls], Acc,IndicesBooster):-
+    length(L,Longitud),
+    (Longitud =< 1 ->  append(Acc,[],Grupos); append(Acc,[L],Grupos)),
+    eliminarGruposInvalidos(Ls,Grupos,IndicesBooster). 
 
+%[L|Ls] es la lista de listas de indices, tiene el siguiente formato [[1,2,3],[4,5],...]
+%Grid funcionara como grilla intermedia en donde se van eliminando los bloques de los grupos dentro de [L|Ls]
+generarGrillaFinalBooster([L|Ls], Grid, Resultado):-
+    eliminandoBloquesShell(L,Grid,Res),
+    generarGrillaFinalBooster(Ls,Res,Resultado).
 
+generarGrillaFinalBooster([], Grid, Resultado):-
+    Resultado = Grid.
 
 
 botonBooster(Grids,Col,Path,RGrid) :-
 
-boosterShell(Grids,ListaIndices),
-eliminandoBloquesShell(ListaIndices,Grids,GRet),
+boosterShell(Grids,GRet),
+%eliminandoBloquesShell(ListaIndices,Grids,GRet),
 enlazarGrilla([Grids],[GRet],RGr),
 generarListasDeListas(GRet,Gresultado),
 agregarShell(Gresultado,Retorna),
