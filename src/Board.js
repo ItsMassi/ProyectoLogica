@@ -1,10 +1,10 @@
 import React, { useEffect } from 'react';
 import Square from './Square';
 import Connector from './Connector';
-import { valueInPos, numberToColor, connectionInPath, posInPath, isAdyacent, equalPos } from './util';
+import { valueInPos, numberToColor, connectionInPath, posInPath, isAdyacent, equalPos, joinResult } from './util';
 
 
-function Board({ grid, numOfColumns, path, onPathChange, onDone }) {
+function Board({ grid, numOfColumns, path, onPathChange, onDone,setValor }) {
 
     function onSquareClick(pos) {
         if (path.length === 0) {    // Clicked the first square, so init the path with that square.
@@ -13,7 +13,7 @@ function Board({ grid, numOfColumns, path, onPathChange, onDone }) {
             if (path.length === 1) {    // If it's the only square in the path, then stop collecting the path (reset to empty).
                 onPathChange([]);
             } else {                    // Otherwise, trigger the game move.
-                onDone();
+                onDone(0);
             }
         }
     }
@@ -24,11 +24,13 @@ function Board({ grid, numOfColumns, path, onPathChange, onDone }) {
         }
         if (isAdyacent(pos, path[path.length - 1])) {
             if (path.length > 1 && equalPos(pos, path[path.length - 2])) {  // Remove the last square in the path if returned to the previous one
-                onPathChange(path.slice(0, path.length - 1));
+                onPathChange(path.slice(0, path.length - 1)); //Este es el nuevo Path que estoy usando
+                setValor(joinResult((path.slice(0, path.length - 1)), grid, numOfColumns));
             } else if (!posInPath(pos, path) &&
                 (valueInPos(pos, grid, numOfColumns) === valueInPos(path[path.length - 1], grid, numOfColumns)
                     || (path.length > 1 && valueInPos(pos, grid, numOfColumns) === 2 * valueInPos(path[path.length - 1], grid, numOfColumns)))) {
-                onPathChange(path.concat([pos]));   // Add a square to the path if adyacent, not already in the path, and equal or next power than the last in the path
+                onPathChange(path.concat([pos])); 
+                setValor(joinResult((path.slice(0, path.length - 1)), grid, numOfColumns));  // Add a square to the path if adyacent, not already in the path, and equal or next power than the last in the path
             }
         }
     }

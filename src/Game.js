@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import PengineClient from './PengineClient';
 import Board from './Board';
 import { joinResult } from './util';
+import Square from './Square';
 
 
 let pengine;
@@ -14,6 +15,7 @@ function Game() {
   const [score, setScore] = useState(0);
   const [path, setPath] = useState([]);
   const [waiting, setWaiting] = useState(false);
+  const[valor,setValor] = useState(0);
 
   useEffect(() => {
     // This is executed just once, after the first render.
@@ -121,8 +123,13 @@ function Game() {
   return (
     <div className="game">
       <div className="header">
+        { path.length>1
+           ?  <Square value = {valor} className = "bloqueValor" />
+           :<div className="score">{score}</div>
+
+        }
         <div> </div>
-        <div className="score">{score}</div>
+  
         <button className="botonBooster" onClick={boosterHandler}>Booster</button>
       </div>
       <Board
@@ -131,6 +138,7 @@ function Game() {
         path={path}
         onPathChange={onPathChange}
         onDone={onPathDone}
+        setValor={setValor}
       />
     </div>
   );
