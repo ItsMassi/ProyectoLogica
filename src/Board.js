@@ -30,7 +30,7 @@ function Board({ grid, numOfColumns, path, onPathChange, onDone,setValor }) {
                 (valueInPos(pos, grid, numOfColumns) === valueInPos(path[path.length - 1], grid, numOfColumns)
                     || (path.length > 1 && valueInPos(pos, grid, numOfColumns) === 2 * valueInPos(path[path.length - 1], grid, numOfColumns)))) {
                 onPathChange(path.concat([pos])); 
-                setValor(joinResult((path.slice(0, path.length - 1)), grid, numOfColumns));  // Add a square to the path if adyacent, not already in the path, and equal or next power than the last in the path
+                setValor(joinResult(path.concat([pos]), grid, numOfColumns));  // Add a square to the path if adyacent, not already in the path, and equal or next power than the last in the path
             }
         }
     }

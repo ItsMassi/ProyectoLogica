@@ -123,12 +123,16 @@ function Game() {
   return (
     <div className="game">
       <div className="header">
+        
+          <div className="score">{score}</div>
+
+        
+        <div> 
         { path.length>1
            ?  <Square value = {valor} className = "bloqueValor" />
-           :<div className="score">{score}</div>
-
-        }
-        <div> </div>
+           : <div></div>
+          }
+        </div>
   
         <button className="botonBooster" onClick={boosterHandler}>Booster</button>
       </div>
