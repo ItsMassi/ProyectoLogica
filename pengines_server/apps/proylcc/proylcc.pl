@@ -1,6 +1,6 @@
 :- module(proylcc, [
     obtenerIndice/2,
-    funcionOrdenar/4,
+    traducirPathAIndices/4,
     sumar/4,
     enlazarGrillas/3,
     eliminarBloquesShell/3,
@@ -9,7 +9,7 @@
     append/3,
     generarColumnaShell/3,
     generarColumna/5,
-    generarListasDeListas/2,
+    generarListasDeColumnas/2,
     gravedad/3,
     agregarShell/2,
     agregarLista/7,
@@ -27,7 +27,7 @@
     botonBooster/4,
     log2/2,
     potenciaDeDosAprox/2,
-    generarBloqueV/4,
+    generarBloque/4,
     esPotenciaDeDos/1,
     sumarCamino/2,
     sumar/4,
@@ -61,6 +61,7 @@ sumarCamino([X|Xs],Suma) :-
     sumarCamino(Xs,SumaRestante), % Sumar los elementos restantes de la lista recursivamente.
     Suma is X+SumaRestante.
 
+%Este predicado Retorna true si N es potencia de dos
 esPotenciaDeDos(1).
 
 esPotenciaDeDos(N) :-
@@ -69,26 +70,30 @@ esPotenciaDeDos(N) :-
     Siguiente is N / 2,
    esPotenciaDeDos(Siguiente).
 
+%Metodo que enlaza dos grillas, este metodo se usa para generar la "animacion de gravedad"
 enlazarGrillas(L1, L2,Resultado) :-
     append(L1,L2,Resultado).
 
+%dado una coordenada (X,Xs) te devuelve el indice al que pertenece dentro de la grid
 obtenerIndice([X|[Xs|_]], Num) :- Num is (X*5) + Xs.
 
 %Funcion que te devuelve la potencia de 2 proximada a un numero.
 log2(X, Log2X) :- Log2X is log(X) / log(2).
 
-potenciaDeDosAprox(X, Y) :- log2(X, Log2X), Y is 2 ** ceil(Log2X).
+%devuelve la potencia de dos mas cercana al numero X
+potenciaDeDosAprox(X, Potencia) :- log2(X, Log2X), Potencia is 2 ** ceil(Log2X).
+
 %suma los valores de los indices del path, dentro de la grilla
-generarBloqueV([],_,Suma,Valor):-
+generarBloque([],_,Suma,Valor):-
     sumarCamino(Suma,Res),
     (not(esPotenciaDeDos(Res))->  potenciaDeDosAprox(Res,V) , Valor is V; Valor is Res).
 
-generarBloqueV([C|Cs],Grid,Suma,Valor) :-
+generarBloque([C|Cs],Grid,Suma,Valor) :-
     nth0(C,Grid,V),
     append([V],Suma,L),
-    generarBloqueV(Cs,Grid,L,Valor).
+    generarBloque(Cs,Grid,L,Valor).
         
-
+%este metodo retorna un la columna ColNum de la Grilla Grid
 generarColumnaShell(L,ColNum,Resultado):-
     length(L,Largo),
     generarColumna(L,ColNum,Largo,[],Resultado).
@@ -107,38 +112,40 @@ generarColumna(L, ColNum, Largo, Acc, Resultado):-
     generarColumna([],_,_,Q,Resultado);%Termina
     generarColumna(L,NuevoColNum,Largo,Q,Resultado)).%caso contrario continua a agregar otro valor.
 
-%generarListasDeListas: Retorna una lista que contiene la lista de elementos por Columnas de la Grid
-generarListasDeListas(L1,Retorno ) :-
-    generarColumnaShell(L1,0,R1),
-    generarColumnaShell(L1,1,R2),
-    append([R1],[R2],Resultado1),
-    generarColumnaShell(L1,2,R3),
-    append(Resultado1,[R3],Resultado2),
-    generarColumnaShell(L1,3,R4),
-    append(Resultado2,[R4],Resultado3),
-    generarColumnaShell(L1,4,R5),
-    append(Resultado3,[R5],Resultado4),
+%generarListasDeColumnas: Retorna una lista que contiene la lista de elementos por Columnas de la Grid
+generarListasDeColumnas(Grid,Retorno ) :-
+    %las variables Resultado son resultados intermedios
+    generarColumnaShell(Grid,0,Columna1),
+    generarColumnaShell(Grid,1,Columna2),
+    append([Columna1],[Columna2],Resultado1),
+    generarColumnaShell(Grid,2,Columna3),
+    append(Resultado1,[Columna3],Resultado2),
+    generarColumnaShell(Grid,3,Columna4),
+    append(Resultado2,[Columna4],Resultado3),
+    generarColumnaShell(Grid,4,Columna5),
+    append(Resultado3,[Columna5],Resultado4),
     Retorno=Resultado4.
 
 %Funcion AgregarShell : Recibe una Lista de Listas de columnas y retorna como resultado la grid Resultante 
-%(Este metodo se utiliza despues de haber usado la funcion generarListasDeListas)
-agregarShell(S, GR) :-
-    nth0(0,S,L1),
-    nth0(1,S,L2),
-    nth0(2,S,L3),
-    nth0(3,S,L4),
-    nth0(4,S,L5),
-   agregarLista(L1,L2,L3,L4,L5,[],GR).
+%(Este metodo se utiliza despues de haber usado la funcion generarListasDeColumnas)
+agregarShell(Grid, GrillaResultado) :-
+    nth0(0,Grid,Columna1),
+    nth0(1,Grid,Columna2),
+    nth0(2,Grid,Columna3),
+    nth0(3,Grid,Columna4),
+    nth0(4,Grid,Columna5),
+   agregarLista(Columna1,Columna2,Columna3,Columna4,Columna5,[],GrillaResultado).
 
-agregarLista([],[],[],[],[],Acc,GR):- 
-   GR=Acc.
-agregarLista([L1|L1S],[L2|L2S],[L3|L3S],[L4|L4S],[L5|L5S],Acc, GR) :-
-   append(Acc,[L1],Q),
-   append(Q,[L2],Q2),
-   append(Q2,[L3],Q3),
-   append(Q3,[L4],Q4),
-   append(Q4,[L5],Q5),
-   agregarLista(L1S,L2S,L3S,L4S,L5S,Q5,GR).
+%Este metodo vuelve a juntar todas columnas en una grilla GR = GrillaResultado
+agregarLista([],[],[],[],[],Acc,GrillaResultado):- 
+    GrillaResultado=Acc.
+agregarLista([Columna1|Columna1S],[Columna2|Columna2S],[Columna3|Columna3S],[Columna4|Columna4S],[Columna5|Columna5S],Acc, GrillaResultado) :-
+   append(Acc,[Columna1],Q),
+   append(Q,[Columna2],Q2),
+   append(Q2,[Columna3],Q3),
+   append(Q3,[Columna4],Q4),
+   append(Q4,[Columna5],Q5),
+   agregarLista(Columna1S,Columna2S,Columna3S,Columna4S,Columna5S,Q5,GrillaResultado).
 
 
 %metodo auxiliar que te devuelve: Resultado = 2^N
@@ -157,8 +164,8 @@ menorPotencia(Cont,Resultado,[]):-%caso base
 menorPotencia(Cont,Resultado,L):- %caso recursivo
     potenciaDos(Cont,Check),%buscamos la menor potencia de dos
     Cont2 is Cont+1,
-    %if ( la potencia esta dentro de L, mandalo a caso base (termina),
-    %caso contrario continua
+    %if ( la potencia esta dentro de L) then mandalo a caso base (termina),
+    %else caso contrario continua
     ( member(Check,L) ->  menorPotencia(Cont,Resultado,[]); menorPotencia(Cont2,Resultado,L)).
 
 %Metodo para generar numeros random
@@ -173,6 +180,7 @@ reemplazarPorRandom([],Acc,Retorno) :-
 reemplazarPorRandom([G|Gs],Acc,Retorno):-
     generarRandom(X),
     potenciaDos(X,Num),
+    %if(el valor actual dentro de la grid es != 0) then no hacemos nada y continua con el siguiente, else lo reemplaza por un numero random y continua con el siguiente
     ( G =\= 0 -> append(Acc,[G],Q) ,reemplazarPorRandom(Gs,Q,Retorno);
     append(Acc,[Num],R),
     reemplazarPorRandom(Gs,R,Retorno)).
@@ -197,7 +205,7 @@ eliminarGruposInvalidos([L|Ls], Acc,IndicesBooster):-
 %Grid funcionara como grilla intermedia en donde se van eliminando los bloques de los grupos dentro de [L|Ls]
 generarGrillaFinalBooster([L|Ls], Grid, AccSuma, Suma,Resultado):-
     eliminarBloquesShell(L,Grid,Res),
-    generarBloqueV(L,Grid,_,ValorBloque),
+    generarBloque(L,Grid,_,ValorBloque),
     append(AccSuma,[ValorBloque],ListaValores),
     generarGrillaFinalBooster(Ls,Res,ListaValores,Suma,Resultado).
 
@@ -205,6 +213,7 @@ generarGrillaFinalBooster([], Grid, AccSuma, Suma, Resultado):-
     sumarValoresLista(AccSuma,0,Suma),
     Resultado = Grid.
 
+%Metodo que suma los valores de una lista
 sumarValoresLista([],Acc,Suma):-
     Suma = Acc.
 sumarValoresLista([L|Ls],Acc,Suma):-
@@ -222,57 +231,67 @@ sumarValoresLista([L|Ls],Acc,Suma):-
 
 %--------------------PREDICADOS PRICIPALES------------------------
 
-funcionOrdenar([X|Xs], Col, P, L) :- %L es la Lista resultante
+traducirPathAIndices([X|Xs], Col, P, L) :- %L es la Lista resultante
     obtenerIndice(X, Pos),
     append(P, [Pos], Q),
-    funcionOrdenar(Xs, Col, Q, L).
+    traducirPathAIndices(Xs, Col, Q, L).
 
 
-funcionOrdenar([[]|Xs], Col, P, L) :- %L es la Lista resultante
-    funcionOrdenar(Xs, Col, P, L).
+    traducirPathAIndices([[]|Xs], Col, P, L) :- %L es la Lista resultante
+    traducirPathAIndices(Xs, Col, P, L).
 
 
-funcionOrdenar([X|[]], _, P, L) :-
+    traducirPathAIndices([X|[]], _, P, L) :-
     obtenerIndice(X, Pos),
     sort(P, Sorted),
     append([Pos],Sorted,NewL),
     L = NewL.
 
-%el eliminando bloques, el ultimos valor es un boolean para saber si ya se cambio el ultimo
-eliminarBloquesShell(L, T, Copia) :-
- %sumar(L,T,1,Res),
-    generarBloqueV(L,T,_,Res),
-    insertarResultadoPath(L, T, [], Copia, 0, Res).
+%este metodo reemplaza los valores de los indices de una grilla por 0 y ubica el resultado de la suma de los
+%valores de la grilla en esos indices
+eliminarBloquesShell(Indices, Grid, Copia) :-
+    generarBloque(Indices,Grid,_,Res),
+    insertarResultadoPath(Indices, Grid, [], Copia, 0, Res).
 
-    eliminarBloque([] , [],Acc , Copia, _) :- append(Acc , [],Copia).
+%intercambia el valor dentro de la grilla por 0
+%recibe: una parte Lista de indices,una parte de la grid, un acumulador, variable donde se guardara 
+%la grilla resultado que sera una copia con cambios y un contador
+eliminarBloque([] , [],Acc , Copia, _) :- append(Acc , [],Copia).%caso base
 
-    eliminarBloque([], [T|Ts], Acc, Copia, _) :-
-    append(Acc , [T], NewAcc),
-    eliminarBloque([],Ts, NewAcc,Copia,_).
-    
-
-    eliminarBloque([Cont], [_|Ts], Acc, Copia, Cont) :-
-    append(Acc, [0], NewAcc),
-    ContAux is Cont + 1,
-    eliminarBloque([], Ts, NewAcc, Copia, ContAux).
-
-    eliminarBloque([Cont|Ls], [_|T], Acc, Copia, Cont) :-
-    append(Acc, [0], NewAcc),
-    ContAux is Cont + 1,
-    eliminarBloque(Ls, T, NewAcc, Copia, ContAux).
-
-    eliminarBloque(L, [H|T], Acc, Copia, Cont) :-
+%caso 1: el contador es distinto del indice buscado -> no cambiamos nada
+eliminarBloque(L, [H|T], Acc, Copia, Cont) :-
     append(Acc, [H], NewAcc),
     ContAux is Cont + 1,
     eliminarBloque(L, T, NewAcc, Copia, ContAux).
 
-%caso: busca el primer elemento de los indices y le asigna el valor completo de la suma del path
+%caso 2: el contador es igual indice buscado -> lo reemplaza por 0
+eliminarBloque([Cont|Ls], [_|T], Acc, Copia, Cont) :-
+    append(Acc, [0], NewAcc),
+    ContAux is Cont + 1,
+    eliminarBloque(Ls, T, NewAcc, Copia, ContAux).
+
+%caso 3: solo queda un indice y es el mismo que el contador -> lo cambiamos por 0
+eliminarBloque([Cont], [_|Ts], Acc, Copia, Cont) :-
+    append(Acc, [0], NewAcc),
+    ContAux is Cont + 1,
+    eliminarBloque([], Ts, NewAcc, Copia, ContAux).
+
+%caso 5: no hay mas indices para cambiar -> dejamos el resto como estaba hasta que se vacie la grid -> caso base
+eliminarBloque([], [T|Ts], Acc, Copia, _) :-
+    append(Acc , [T], NewAcc),
+    eliminarBloque([],Ts, NewAcc,Copia,_).
+    
+
+
+%busca el primer elemento de los indices y le asigna el valor completo de la suma del path
+%recibe: Lista de indices, Grid, Acumlador, variable donde se guardara la grilla resultado
+%que sera una copia con cambios, un contador y el resultado de la suma de los valores de los indices
 insertarResultadoPath([Cont|Ls], [_|T], Acc, Copia, Cont,Res) :-
     append(Acc, [Res], Aux),
     append(Aux,T,NewAcc),
     eliminarBloque(Ls, NewAcc, [], Copia, 0).
 
-    insertarResultadoPath(L, [H|T], Acc, Copia, Cont,Res) :-
+insertarResultadoPath(L, [H|T], Acc, Copia, Cont,Res) :-
     append(Acc, [H], NewAcc),
     ContAux is Cont + 1,
     insertarResultadoPath(L, T, NewAcc, Copia, ContAux,Res).
@@ -317,20 +336,20 @@ dfs(Grid, [Vecino|Vecinos],MinPot, Visitados, VisitadosFinales) :-
 %  Busca los vecinos del indice dado, verifica si son movimientos validos 
 %  y los devuelve en una lista
 explorarVecinos(Grid, Indice, MinPot,Vecinos) :-
-    obtenerVecinos(Indice,V),
+    obtenerVecinos(Indice,VecinosObtenidos),
     % Esta lista contiene los índices de los nodos que están por encima, por debajo, 
     % a la izquierda y a la derecha del nodo actual, respectivamente.
     findall(N, (
-        member(N, V),
+        member(N, VecinosObtenidos),
         movimientoValido(Grid, MinPot,N)),
         Vecinos).
 
-%recibe un indice Z y devuelve una lista de indices
-obtenerVecinos(Z, P) :-
-    % Make sure Z is valid (i.e., divisible by 5)
-    % Solve for X and Y
-    X is Z // 5,
-    Y is Z - (X * 5),
+%recibe un indicey devuelve una lista de indices
+obtenerVecinos(Indice, P) :-
+    % Nos aseguramos que Indice Sea valido (i.e., divisible by 5)
+    % obtiene los valores de X e Y para trabajar como matriz
+    X is Indice // 5,
+    Y is Indice - (X * 5),
     Arriba is X-1,
     Abajo is X+1,
     Derecha is Y+1,
@@ -347,7 +366,7 @@ obtenerVecinos(Z, P) :-
         member(N, [PosArriba,PosAbajo,PosDerecha,PosIzquierda,PosArrIz,PosArrDr,PosAbjIz,PosAbjDr]),
         dif(N,[]))
         , Vecinos),
-    funcionOrdenar(Vecinos,5,[],P).
+        traducirPathAIndices(Vecinos,5,[],P).
 
 % Predicado principal para ejecutar DFS desde el índice A
 % buscando los vecinos validos y visitando aquellos que no se hayan visitado.
@@ -364,7 +383,6 @@ booster(_,40,Acumulador,VisitadosFinales):-
 % el 0 hasta el 40
 %acumulador funciona como acumulador de lista de listas
 booster(Grid,Indice,Acumulador,VisitadosFinales):-
-    %menorPotencia(1,MinPot,Grid),
     nth0(Indice,Grid,ValorIndice),
     dfsDesdeHasta(Grid,Indice,ValorIndice,Indices),
     %si el valor del indice es MinPut agrega este valor actual
@@ -373,38 +391,32 @@ booster(Grid,Indice,Acumulador,VisitadosFinales):-
                                     [_|Ts] = Indices, append([],Ts,ListaIndices)),
     list_to_set(ListaIndices,IndicesSinRepetir),%funcion de libreria estandar
     sort(IndicesSinRepetir,IndicesOrdenados),
-    %write('Valor acumulador: '),write(Acumulador),nl,
-    %write('Valor Indice: '),write(Indice),nl,
-    %write('Valor IndicesOrdenados: '),write(IndicesOrdenados),nl,
+    %si Los indices ordenados ya existen no los agreges al acumulador
     (member(IndicesOrdenados,Acumulador) ->  append(Acumulador,[],ListaDeListas);
     										append(Acumulador,[IndicesOrdenados],ListaDeListas)),
-    
-    %write('Valor ListaDeListas: '),write(ListaDeListas),nl,
-    %write('----------------------------'),nl,
     IndiceB is Indice + 1,
     booster(Grid,IndiceB,ListaDeListas, VisitadosFinales).
 
+%funcion principal del booster
 boosterShell(Grid,GridResultado,Suma):-
     booster(Grid,0,[],ListaGrupos),
     eliminarGruposInvalidos(ListaGrupos,_Acc,GruposValidos),
     generarGrillaFinalBooster(GruposValidos,Grid,_,Suma,GridResultado).
-    %sort(Indices, IndicesBooster).
 
 botonBooster(Grids,_,_,RGrid) :-
     boosterShell(Grids,GRet,Suma),
-    %eliminarBloquesShell(ListaIndices,Grids,GRet),
     enlazarGrillas([Grids],[GRet],RGr),
-    generarListasDeListas(GRet,Gresultado),
+    generarListasDeColumnas(GRet,Gresultado),
     agregarShell(Gresultado,Retorna),
     enlazarGrillas(RGr,[Retorna],RGr1),
     reemplazarPorRandom(Retorna,_,Resultante),
     enlazarGrillas(RGr1,[Resultante],RGrid).
 
 join(Grid, Col, Path, RGrids):-
-    funcionOrdenar(Path,Col,_,L),
+    traducirPathAIndices(Path,Col,_,L),
     eliminarBloquesShell(L,Grid,GRetorno),
     enlazarGrillas([Grid],[GRetorno],RG),
-    generarListasDeListas(GRetorno,Gresultante),
+    generarListasDeColumnas(GRetorno,Gresultante),
     agregarShell(Gresultante,Resultado),
     enlazarGrillas(RG,[Resultado],RG2),
     reemplazarPorRandom(Resultado,_,Re),
