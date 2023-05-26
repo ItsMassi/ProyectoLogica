@@ -2,10 +2,10 @@
     obtenerIndice/2,
     funcionOrdenar/4,
     sumar/4,
-    enlazarGrilla/3,
-    eliminandoBloquesShell/3,
-    eliminandoBloquesB/5,
-    eliminandoBloquesA/6,
+    enlazarGrillas/3,
+    eliminarBloquesShell/3,
+    eliminarBloque/5,
+    insertarResultadoPath/6,
     append/3,
     generarColumnaShell/3,
     generarColumna/5,
@@ -30,7 +30,6 @@
     generarBloqueV/4,
     esPotenciaDeDos/1,
     sumarCamino/2,
-    append/3,
     sumar/4,
     generarGrillaFinalBooster/5,
     sumarValoresLista/3,
@@ -70,7 +69,7 @@ esPotenciaDeDos(N) :-
     Siguiente is N / 2,
    esPotenciaDeDos(Siguiente).
 
-enlazarGrilla(L1, L2,Resultado) :-
+enlazarGrillas(L1, L2,Resultado) :-
     append(L1,L2,Resultado).
 
 obtenerIndice([X|[Xs|_]], Num) :- Num is (X*5) + Xs.
@@ -141,7 +140,7 @@ agregarLista([L1|L1S],[L2|L2S],[L3|L3S],[L4|L4S],[L5|L5S],Acc, GR) :-
    append(Q4,[L5],Q5),
    agregarLista(L1S,L2S,L3S,L4S,L5S,Q5,GR).
 
-%Metodo menorPotencia
+
 %metodo auxiliar que te devuelve: Resultado = 2^N
 potenciaDos(0,1).
 potenciaDos(N,Resultado) :-
@@ -197,7 +196,7 @@ eliminarGruposInvalidos([L|Ls], Acc,IndicesBooster):-
 %[L|Ls] es la lista de listas de indices, tiene el siguiente formato [[1,2,3],[4,5],...]
 %Grid funcionara como grilla intermedia en donde se van eliminando los bloques de los grupos dentro de [L|Ls]
 generarGrillaFinalBooster([L|Ls], Grid, AccSuma, Suma,Resultado):-
-    eliminandoBloquesShell(L,Grid,Res),
+    eliminarBloquesShell(L,Grid,Res),
     generarBloqueV(L,Grid,_,ValorBloque),
     append(AccSuma,[ValorBloque],ListaValores),
     generarGrillaFinalBooster(Ls,Res,ListaValores,Suma,Resultado).
@@ -240,43 +239,43 @@ funcionOrdenar([X|[]], _, P, L) :-
     L = NewL.
 
 %el eliminando bloques, el ultimos valor es un boolean para saber si ya se cambio el ultimo
-eliminandoBloquesShell(L, T, Copia) :-
+eliminarBloquesShell(L, T, Copia) :-
  %sumar(L,T,1,Res),
     generarBloqueV(L,T,_,Res),
-    eliminandoBloquesA(L, T, [], Copia, 0, Res).
+    insertarResultadoPath(L, T, [], Copia, 0, Res).
 
-eliminandoBloquesB([] , [],Acc , Copia, _) :- append(Acc , [],Copia).
+    eliminarBloque([] , [],Acc , Copia, _) :- append(Acc , [],Copia).
 
-eliminandoBloquesB([], [T|Ts], Acc, Copia, _) :-
+    eliminarBloque([], [T|Ts], Acc, Copia, _) :-
     append(Acc , [T], NewAcc),
-    eliminandoBloquesB([],Ts, NewAcc,Copia,_).
+    eliminarBloque([],Ts, NewAcc,Copia,_).
     
 
-eliminandoBloquesB([Cont], [_|Ts], Acc, Copia, Cont) :-
+    eliminarBloque([Cont], [_|Ts], Acc, Copia, Cont) :-
     append(Acc, [0], NewAcc),
     ContAux is Cont + 1,
-    eliminandoBloquesB([], Ts, NewAcc, Copia, ContAux).
+    eliminarBloque([], Ts, NewAcc, Copia, ContAux).
 
-eliminandoBloquesB([Cont|Ls], [_|T], Acc, Copia, Cont) :-
+    eliminarBloque([Cont|Ls], [_|T], Acc, Copia, Cont) :-
     append(Acc, [0], NewAcc),
     ContAux is Cont + 1,
-    eliminandoBloquesB(Ls, T, NewAcc, Copia, ContAux).
+    eliminarBloque(Ls, T, NewAcc, Copia, ContAux).
 
-eliminandoBloquesB(L, [H|T], Acc, Copia, Cont) :-
+    eliminarBloque(L, [H|T], Acc, Copia, Cont) :-
     append(Acc, [H], NewAcc),
     ContAux is Cont + 1,
-    eliminandoBloquesB(L, T, NewAcc, Copia, ContAux).
+    eliminarBloque(L, T, NewAcc, Copia, ContAux).
 
 %caso: busca el primer elemento de los indices y le asigna el valor completo de la suma del path
-eliminandoBloquesA([Cont|Ls], [_|T], Acc, Copia, Cont,Res) :-
+insertarResultadoPath([Cont|Ls], [_|T], Acc, Copia, Cont,Res) :-
     append(Acc, [Res], Aux),
     append(Aux,T,NewAcc),
-    eliminandoBloquesB(Ls, NewAcc, [], Copia, 0).
+    eliminarBloque(Ls, NewAcc, [], Copia, 0).
 
-eliminandoBloquesA(L, [H|T], Acc, Copia, Cont,Res) :-
+    insertarResultadoPath(L, [H|T], Acc, Copia, Cont,Res) :-
     append(Acc, [H], NewAcc),
     ContAux is Cont + 1,
-    eliminandoBloquesA(L, T, NewAcc, Copia, ContAux,Res).
+    insertarResultadoPath(L, T, NewAcc, Copia, ContAux,Res).
 
 
 %Segunda etapa del Juego
@@ -393,23 +392,23 @@ boosterShell(Grid,GridResultado,Suma):-
 
 botonBooster(Grids,_,_,RGrid) :-
     boosterShell(Grids,GRet,Suma),
-    %eliminandoBloquesShell(ListaIndices,Grids,GRet),
-    enlazarGrilla([Grids],[GRet],RGr),
+    %eliminarBloquesShell(ListaIndices,Grids,GRet),
+    enlazarGrillas([Grids],[GRet],RGr),
     generarListasDeListas(GRet,Gresultado),
     agregarShell(Gresultado,Retorna),
-    enlazarGrilla(RGr,[Retorna],RGr1),
+    enlazarGrillas(RGr,[Retorna],RGr1),
     reemplazarPorRandom(Retorna,_,Resultante),
-    enlazarGrilla(RGr1,[Resultante],RGrid).
+    enlazarGrillas(RGr1,[Resultante],RGrid).
 
 join(Grid, Col, Path, RGrids):-
     funcionOrdenar(Path,Col,_,L),
-    eliminandoBloquesShell(L,Grid,GRetorno),
-    enlazarGrilla([Grid],[GRetorno],RG),
+    eliminarBloquesShell(L,Grid,GRetorno),
+    enlazarGrillas([Grid],[GRetorno],RG),
     generarListasDeListas(GRetorno,Gresultante),
     agregarShell(Gresultante,Resultado),
-    enlazarGrilla(RG,[Resultado],RG2),
+    enlazarGrillas(RG,[Resultado],RG2),
     reemplazarPorRandom(Resultado,_,Re),
-    enlazarGrilla(RG2,[Re],RGrids).
+    enlazarGrillas(RG2,[Re],RGrids).
 
 
 
