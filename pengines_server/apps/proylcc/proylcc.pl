@@ -145,8 +145,8 @@ generarColumnaShell(L,ColNum,Resultado):-
 length(L,Largo),
 generarColumna(L,ColNum,Largo,[],Resultado).
 
-generarColumna([], ColNum, Largo, Acc, Resultado):- %caso base
-gravedad(Acc,X,Resultado). %gruardamos el resultado de la lista de columna
+generarColumna([], _, _, Acc, Resultado):- %caso base
+gravedad(Acc,_,Resultado). %gruardamos el resultado de la lista de columna
 
 generarColumna(L, ColNum, Largo, Acc, Resultado):- 
 %Acc es una lista Acumulativa (auxiliar) que va a guardar las instancias 
@@ -347,7 +347,7 @@ booster(Grid,Indice,Acumulador,VisitadosFinales):-
 boosterShell(Grid,GridResultado,Suma):-
     booster(Grid,0,[],ListaGrupos),
     eliminarGruposInvalidos(ListaGrupos,_Acc,GruposValidos),
-    generarGrillaFinalBooster(GruposValidos,Grid,Aux,Suma,GridResultado).
+    generarGrillaFinalBooster(GruposValidos,Grid,_,Suma,GridResultado).
     %sort(Indices, IndicesBooster).
 
 %elimina grupos de longitud n <= 1
@@ -363,7 +363,7 @@ eliminarGruposInvalidos([L|Ls], Acc,IndicesBooster):-
 %Grid funcionara como grilla intermedia en donde se van eliminando los bloques de los grupos dentro de [L|Ls]
 generarGrillaFinalBooster([L|Ls], Grid, AccSuma, Suma,Resultado):-
     eliminandoBloquesShell(L,Grid,Res),
-    generarBloqueV(L,Grid,Aux,ValorBloque),
+    generarBloqueV(L,Grid,_,ValorBloque),
     append(AccSuma,[ValorBloque],ListaValores),
     generarGrillaFinalBooster(Ls,Res,ListaValores,Suma,Resultado).
 
@@ -377,7 +377,7 @@ sumarValoresLista([L|Ls],Acc,Suma):-
     Aux is L+Acc,
     sumarValoresLista(Ls,Aux,Suma).
 
-botonBooster(Grids,Col,Path,RGrid) :-
+botonBooster(Grids,_,_,RGrid) :-
 
 boosterShell(Grids,GRet,Suma),
 %eliminandoBloquesShell(ListaIndices,Grids,GRet),
@@ -385,17 +385,17 @@ enlazarGrilla([Grids],[GRet],RGr),
 generarListasDeListas(GRet,Gresultado),
 agregarShell(Gresultado,Retorna),
 enlazarGrilla(RGr,[Retorna],RGr1),
-reemplazarPorRandom(Retorna,Acumulador,Resultante),
+reemplazarPorRandom(Retorna,_,Resultante),
 enlazarGrilla(RGr1,[Resultante],RGrid).
 
 join(Grid, Col, Path, RGrids):-
-    funcionOrdenar(Path,Col,Aux,L),
+    funcionOrdenar(Path,Col,_,L),
     eliminandoBloquesShell(L,Grid,GRetorno),
     enlazarGrilla([Grid],[GRetorno],RG),
     generarListasDeListas(GRetorno,Gresultante),
     agregarShell(Gresultante,Resultado),
     enlazarGrilla(RG,[Resultado],RG2),
-    reemplazarPorRandom(Resultado,Acc,Re),
+    reemplazarPorRandom(Resultado,_,Re),
     enlazarGrilla(RG2,[Re],RGrids).
 
 
