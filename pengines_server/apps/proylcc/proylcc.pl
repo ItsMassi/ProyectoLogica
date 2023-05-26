@@ -23,7 +23,7 @@
     obtenerVecinos/2,
     dfsDesdeHasta/4,
     booster/4,
-    boosterShell/2,
+    boosterShell/3,
     botonBooster/4,
     log2/2,
     potenciaDeDosAprox/2,
@@ -33,6 +33,7 @@
     append/3,
     sumar/4,
     generarGrillaFinalBooster/5,
+    sumarValoresLista/3,
     join/4
     
 
@@ -343,7 +344,7 @@ booster(Grid,Indice,Acumulador,VisitadosFinales):-
     IndiceB is Indice + 1,
     booster(Grid,IndiceB,ListaDeListas, VisitadosFinales).
 
-boosterShell(Grid,GridResultado):-
+boosterShell(Grid,GridResultado,Suma):-
     booster(Grid,0,[],ListaGrupos),
     eliminarGruposInvalidos(ListaGrupos,_Acc,GruposValidos),
     generarGrillaFinalBooster(GruposValidos,Grid,Aux,Suma,GridResultado).
@@ -378,7 +379,7 @@ sumarValoresLista([L|Ls],Acc,Suma):-
 
 botonBooster(Grids,Col,Path,RGrid) :-
 
-boosterShell(Grids,GRet),
+boosterShell(Grids,GRet,Suma),
 %eliminandoBloquesShell(ListaIndices,Grids,GRet),
 enlazarGrilla([Grids],[GRet],RGr),
 generarListasDeListas(GRet,Gresultado),
