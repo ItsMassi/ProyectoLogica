@@ -237,11 +237,11 @@ traducirPathAIndices([X|Xs], Col, P, L) :- %L es la Lista resultante
     traducirPathAIndices(Xs, Col, Q, L).
 
 
-    traducirPathAIndices([[]|Xs], Col, P, L) :- %L es la Lista resultante
+traducirPathAIndices([[]|Xs], Col, P, L) :- %L es la Lista resultante
     traducirPathAIndices(Xs, Col, P, L).
 
 
-    traducirPathAIndices([X|[]], _, P, L) :-
+traducirPathAIndices([X|[]], _, P, L) :-
     obtenerIndice(X, Pos),
     sort(P, Sorted),
     append([Pos],Sorted,NewL),
