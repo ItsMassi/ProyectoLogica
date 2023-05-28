@@ -77,7 +77,7 @@ enlazarGrillas(L1, L2,Resultado) :-
 %dado una coordenada (X,Xs) te devuelve el indice al que pertenece dentro de la grid
 obtenerIndice([X|[Xs|_]], Num) :- Num is (X*5) + Xs.
 
-%Funcion que te devuelve la potencia de 2 proximada a un numero.
+%Funcion que te devuelve el log2 de un numero X.
 log2(X, Log2X) :- Log2X is log(X) / log(2).
 
 %devuelve la potencia de dos mas cercana al numero X
@@ -94,23 +94,23 @@ generarBloque([C|Cs],Grid,Suma,Valor) :-
     generarBloque(Cs,Grid,L,Valor).
         
 %este metodo retorna un la columna ColNum de la Grilla Grid
-generarColumnaShell(L,ColNum,Resultado):-
-    length(L,Largo),
-    generarColumna(L,ColNum,Largo,[],Resultado).
+generarColumnaShell(Grid,ColNum,Resultado):-
+    length(Grid,Largo),
+    generarColumna(Grid,ColNum,Largo,[],Resultado).
 
 generarColumna([], _, _, Acc, Resultado):- %caso base
     gravedad(Acc,_,Resultado). %gruardamos el resultado de la lista de columna
 
-generarColumna(L, ColNum, Largo, Acc, Resultado):- 
+generarColumna(Grid, ColNum, Largo, Acc, Resultado):- 
     %Acc es una lista Acumulativa (auxiliar) que va a guardar las instancias 
     %intermedias de la lista final
     %la idea es usar ColNum como indice
-    nth0(ColNum,L,Valor),%sacamos el valor del exponente ColNum
+    nth0(ColNum,Grid,Valor),%sacamos el valor del exponente ColNum
     append(Acc,[Valor],Q),%lo agregamos al final de la lista Acc
     NuevoColNum is ColNum + 5, %calculamos el nuevo indice
     (NuevoColNum >= Largo -> % si el indice es no esta en la lista
     generarColumna([],_,_,Q,Resultado);%Termina
-    generarColumna(L,NuevoColNum,Largo,Q,Resultado)).%caso contrario continua a agregar otro valor.
+    generarColumna(Grid,NuevoColNum,Largo,Q,Resultado)).%caso contrario continua a agregar otro valor.
 
 %generarListasDeColumnas: Retorna una lista que contiene la lista de elementos por Columnas de la Grid
 generarListasDeColumnas(Grid,Retorno ) :-
@@ -186,11 +186,11 @@ reemplazarPorRandom([G|Gs],Acc,Retorno):-
     reemplazarPorRandom(Gs,R,Retorno)).
 
 % Predicado auxiliar para comprobar si un movimiento es válido
-movimientoValido(Grid, MinPot, Indice) :-
+movimientoValido(Grid, Valor, Indice) :-
     Indice >= 0,
     length(Grid, L),
     Indice < L,
-    nth0(Indice, Grid, MinPot).
+    nth0(Indice, Grid, Valor).
 
 %elimina grupos de longitud n <= 1
 %[L|Ls] es la lista con los grupos de indices: [[1,2,3],[4],...]
@@ -320,14 +320,14 @@ dfs(_, [], _, Visitados, Visitados).
 % En caso contrario, se explora el primer vecino, se añade a los visitados y se busca los vecinos de este vecino.
 % Luego se hace una llamada recursiva a dfs con la lista de vecinos encontrados del vecino actual,
 % junto con los demas vecinos pendientes.
-dfs(Grid, [Vecino|Vecinos],MinPot, Visitados, VisitadosFinales) :-
+dfs(Grid, [Vecino|Vecinos],Buscado, Visitados, VisitadosFinales) :-
     (member(Vecino, Visitados) ->
-        dfs(Grid, Vecinos, MinPot, Visitados, VisitadosFinales)
+        dfs(Grid, Vecinos, Buscado, Visitados, VisitadosFinales)
     ;
         append(Visitados, [Vecino],NuevosVisitados),
-        explorarVecinos(Grid, Vecino, MinPot,VecinosVecino),
-        dfs(Grid, VecinosVecino, MinPot, NuevosVisitados, VisitadosDespuesVecinos),
-        dfs(Grid, Vecinos, MinPot,VisitadosDespuesVecinos, VisitadosFinales)
+        explorarVecinos(Grid, Vecino, Buscado,VecinosVecino),
+        dfs(Grid, VecinosVecino, Buscado, NuevosVisitados, VisitadosDespuesVecinos),
+        dfs(Grid, Vecinos, Buscado,VisitadosDespuesVecinos, VisitadosFinales)
     ).
 
 
@@ -335,13 +335,13 @@ dfs(Grid, [Vecino|Vecinos],MinPot, Visitados, VisitadosFinales) :-
 % Predicado para explorar vecinos
 %  Busca los vecinos del indice dado, verifica si son movimientos validos 
 %  y los devuelve en una lista
-explorarVecinos(Grid, Indice, MinPot,Vecinos) :-
+explorarVecinos(Grid, Indice, Buscado,Vecinos) :-
     obtenerVecinos(Indice,VecinosObtenidos),
     % Esta lista contiene los índices de los nodos que están por encima, por debajo, 
     % a la izquierda y a la derecha del nodo actual, respectivamente.
     findall(N, (
         member(N, VecinosObtenidos),
-        movimientoValido(Grid, MinPot,N)),
+        movimientoValido(Grid, Buscado,N)),
         Vecinos).
 
 %recibe un indicey devuelve una lista de indices
@@ -371,9 +371,9 @@ obtenerVecinos(Indice, P) :-
 % Predicado principal para ejecutar DFS desde el índice A
 % buscando los vecinos validos y visitando aquellos que no se hayan visitado.
 % Retorna una lista con los indices visitados
-dfsDesdeHasta(Grid, A, MinPot, VisitadosFinales) :-
-    explorarVecinos(Grid, A, MinPot,Vecinos),
-    dfs(Grid, Vecinos, MinPot, [A], VisitadosFinales).
+dfsDesdeHasta(Grid, A, Buscado, VisitadosFinales) :-
+    explorarVecinos(Grid, A, Buscado,Vecinos),
+    dfs(Grid, Vecinos, Buscado, [A], VisitadosFinales).
 
 %caso base de la ejecucion de booster hasta 40 tamaño de la lista
 booster(_,40,Acumulador,VisitadosFinales):-
@@ -404,7 +404,7 @@ boosterShell(Grid,GridResultado,Suma):-
     generarGrillaFinalBooster(GruposValidos,Grid,_,Suma,GridResultado).
 
 botonBooster(Grids,_,_,RGrid) :-
-    boosterShell(Grids,GRet,Suma),
+    boosterShell(Grids,GRet,_), %si quieres la suma reemplaza el "_"
     enlazarGrillas([Grids],[GRet],RGr),
     generarListasDeColumnas(GRet,Gresultado),
     agregarShell(Gresultado,Retorna),
