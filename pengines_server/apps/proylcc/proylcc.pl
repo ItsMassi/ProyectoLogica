@@ -1,12 +1,10 @@
 :- module(proylcc, [
     obtenerIndice/2,
     traducirPathAIndices/4,
-    sumar/4,
     enlazarGrillas/3,
     eliminarBloquesShell/3,
     eliminarBloque/5,
     insertarResultadoPath/6,
-    append/3,
     generarColumnaShell/3,
     generarColumna/5,
     generarListasDeColumnas/2,
@@ -30,13 +28,9 @@
     generarBloque/4,
     esPotenciaDeDos/1,
     sumarCamino/2,
-    sumar/4,
     generarGrillaFinalBooster/5,
     sumarValoresLista/3,
     join/4
-    
-
-
 ]).
 
 
@@ -99,6 +93,8 @@ generarColumnaShell(Grid,ColNum,Resultado):-
     generarColumna(Grid,ColNum,Largo,[],Resultado).
 
 generarColumna([], _, _, Acc, Resultado):- %caso base
+    %dado que generarColumna lo usamos cuando queremos aplicar gravedad
+    %hacemos un paso extra de mover todos los 0 arriba para una animacion mas fluida
     gravedad(Acc,_,Resultado). %gruardamos el resultado de la lista de columna
 
 generarColumna(Grid, ColNum, Largo, Acc, Resultado):- 
