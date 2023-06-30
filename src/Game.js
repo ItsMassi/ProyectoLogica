@@ -16,6 +16,8 @@ function Game() {
   const [path, setPath] = useState([]);
   const [waiting, setWaiting] = useState(false);
   const[valor,setValor] = useState(0);
+  
+
 
   useEffect(() => {
     // This is executed just once, after the first render.
@@ -47,17 +49,32 @@ function Game() {
     setPath(newPath);
     console.log(JSON.stringify(newPath));
   }
+  
   function boosterHandler() {
     
     const gridS = JSON.stringify(grid);
     const pathS = JSON.stringify(path);
-    const queryS = "botonBooster(" + gridS + "," + numOfColumns + "," + pathS + ", RGrids)"; //Hacer la constante para el boton booster
+    const queryS = "botonBooster(" + gridS + "," + numOfColumns + "," + pathS + ", RGrids)"; 
     setWaiting(true);
     pengine.query(queryS, (success, response) => {
       if (success) {
-        setScore(score + joinResult(path, grid, numOfColumns));
+        setScore(score + joinResult(path, grid, numOfColumns)); 
         setPath([]);
         animateEffect(response['RGrids']);
+      } else {
+        setWaiting(false);
+      }
+    });
+  }
+  function ayudaMaximaHandler() {
+    
+    const gridS = JSON.stringify(grid);
+    const queryS = "ayudaMovidaMaxima(" + gridS + ", Camino)";  
+    setWaiting(true);
+    pengine.query(queryS, (success, response) => {
+      console.log(response)
+      if (success) {
+        setPath(response['Camino']);
       } else {
         setWaiting(false);
       }
@@ -135,7 +152,11 @@ function Game() {
         </div>
   
         <button className="botonBooster" onClick={boosterHandler}>Booster</button>
+        <button className="botonAyuda1" onClick={ayudaMaximaHandler}>Movida maxima</button>
+        
+      
       </div>
+      
       <Board
         grid={grid}
         numOfColumns={numOfColumns}

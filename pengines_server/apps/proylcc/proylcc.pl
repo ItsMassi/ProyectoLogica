@@ -1,36 +1,12 @@
 :- module(proylcc, [
-    obtenerIndice/2,
-    traducirPathAIndices/4,
-    enlazarGrillas/3,
-    eliminarBloquesShell/3,
-    eliminarBloque/5,
-    insertarResultadoPath/6,
-    generarColumnaShell/3,
-    generarColumna/5,
-    generarListasDeColumnas/2,
-    gravedad/3,
-    agregarShell/2,
-    agregarLista/7,
-    potenciaDos/2,
-    menorPotencia/3,
-    generarRandom/1,
-    reemplazarPorRandom/3,
-    dfs/5,
-    movimientoValido/3,
-    explorarVecinos/4,
-    obtenerVecinos/2,
-    dfsDesdeHasta/4,
-    booster/4,
-    boosterShell/3,
+    
     botonBooster/4,
-    log2/2,
-    potenciaDeDosAprox/2,
-    generarBloque/4,
-    esPotenciaDeDos/1,
-    sumarCamino/2,
-    generarGrillaFinalBooster/5,
-    sumarValoresLista/3,
-    join/4
+    join/4,
+    ayudaMovidaMaxima/2,
+    ayudaMaximaIguales/2
+    
+
+
 ]).
 
 
@@ -71,7 +47,7 @@ enlazarGrillas(L1, L2,Resultado) :-
 %dado una coordenada (X,Xs) te devuelve el indice al que pertenece dentro de la grid
 obtenerIndice([X|[Xs|_]], Num) :- Num is (X*5) + Xs.
 
-%Funcion que te devuelve el log2 de un numero X.
+%Funcion que te devuelve la potencia de 2 proximada a un numero.
 log2(X, Log2X) :- Log2X is log(X) / log(2).
 
 %devuelve la potencia de dos mas cercana al numero X
@@ -88,25 +64,23 @@ generarBloque([C|Cs],Grid,Suma,Valor) :-
     generarBloque(Cs,Grid,L,Valor).
         
 %este metodo retorna un la columna ColNum de la Grilla Grid
-generarColumnaShell(Grid,ColNum,Resultado):-
-    length(Grid,Largo),
-    generarColumna(Grid,ColNum,Largo,[],Resultado).
+generarColumnaShell(L,ColNum,Resultado):-
+    length(L,Largo),
+    generarColumna(L,ColNum,Largo,[],Resultado).
 
 generarColumna([], _, _, Acc, Resultado):- %caso base
-    %dado que generarColumna lo usamos cuando queremos aplicar gravedad
-    %hacemos un paso extra de mover todos los 0 arriba para una animacion mas fluida
     gravedad(Acc,_,Resultado). %gruardamos el resultado de la lista de columna
 
-generarColumna(Grid, ColNum, Largo, Acc, Resultado):- 
+generarColumna(L, ColNum, Largo, Acc, Resultado):- 
     %Acc es una lista Acumulativa (auxiliar) que va a guardar las instancias 
     %intermedias de la lista final
     %la idea es usar ColNum como indice
-    nth0(ColNum,Grid,Valor),%sacamos el valor del exponente ColNum
+    nth0(ColNum,L,Valor),%sacamos el valor del exponente ColNum
     append(Acc,[Valor],Q),%lo agregamos al final de la lista Acc
     NuevoColNum is ColNum + 5, %calculamos el nuevo indice
     (NuevoColNum >= Largo -> % si el indice es no esta en la lista
     generarColumna([],_,_,Q,Resultado);%Termina
-    generarColumna(Grid,NuevoColNum,Largo,Q,Resultado)).%caso contrario continua a agregar otro valor.
+    generarColumna(L,NuevoColNum,Largo,Q,Resultado)).%caso contrario continua a agregar otro valor.
 
 %generarListasDeColumnas: Retorna una lista que contiene la lista de elementos por Columnas de la Grid
 generarListasDeColumnas(Grid,Retorno ) :-
@@ -182,11 +156,11 @@ reemplazarPorRandom([G|Gs],Acc,Retorno):-
     reemplazarPorRandom(Gs,R,Retorno)).
 
 % Predicado auxiliar para comprobar si un movimiento es válido
-movimientoValido(Grid, Valor, Indice) :-
+movimientoValido(Grid, MinPot, Indice) :-
     Indice >= 0,
     length(Grid, L),
     Indice < L,
-    nth0(Indice, Grid, Valor).
+    nth0(Indice, Grid, MinPot).
 
 %elimina grupos de longitud n <= 1
 %[L|Ls] es la lista con los grupos de indices: [[1,2,3],[4],...]
@@ -215,15 +189,6 @@ sumarValoresLista([],Acc,Suma):-
 sumarValoresLista([L|Ls],Acc,Suma):-
     Aux is L+Acc,
     sumarValoresLista(Ls,Aux,Suma).
-
-
-
-
-
-
-
-
-
 
 %--------------------PREDICADOS PRICIPALES------------------------
 
@@ -316,14 +281,14 @@ dfs(_, [], _, Visitados, Visitados).
 % En caso contrario, se explora el primer vecino, se añade a los visitados y se busca los vecinos de este vecino.
 % Luego se hace una llamada recursiva a dfs con la lista de vecinos encontrados del vecino actual,
 % junto con los demas vecinos pendientes.
-dfs(Grid, [Vecino|Vecinos],Buscado, Visitados, VisitadosFinales) :-
+dfs(Grid, [Vecino|Vecinos],MinPot, Visitados, VisitadosFinales) :-
     (member(Vecino, Visitados) ->
-        dfs(Grid, Vecinos, Buscado, Visitados, VisitadosFinales)
+        dfs(Grid, Vecinos, MinPot, Visitados, VisitadosFinales)
     ;
         append(Visitados, [Vecino],NuevosVisitados),
-        explorarVecinos(Grid, Vecino, Buscado,VecinosVecino),
-        dfs(Grid, VecinosVecino, Buscado, NuevosVisitados, VisitadosDespuesVecinos),
-        dfs(Grid, Vecinos, Buscado,VisitadosDespuesVecinos, VisitadosFinales)
+        explorarVecinos(Grid, Vecino, MinPot,VecinosVecino),
+        dfs(Grid, VecinosVecino, MinPot, NuevosVisitados, VisitadosDespuesVecinos),
+        dfs(Grid, Vecinos, MinPot,VisitadosDespuesVecinos, VisitadosFinales)
     ).
 
 
@@ -331,13 +296,13 @@ dfs(Grid, [Vecino|Vecinos],Buscado, Visitados, VisitadosFinales) :-
 % Predicado para explorar vecinos
 %  Busca los vecinos del indice dado, verifica si son movimientos validos 
 %  y los devuelve en una lista
-explorarVecinos(Grid, Indice, Buscado,Vecinos) :-
+explorarVecinos(Grid, Indice, MinPot,Vecinos) :-
     obtenerVecinos(Indice,VecinosObtenidos),
     % Esta lista contiene los índices de los nodos que están por encima, por debajo, 
     % a la izquierda y a la derecha del nodo actual, respectivamente.
     findall(N, (
         member(N, VecinosObtenidos),
-        movimientoValido(Grid, Buscado,N)),
+        movimientoValido(Grid, MinPot,N)),
         Vecinos).
 
 %recibe un indicey devuelve una lista de indices
@@ -356,8 +321,8 @@ obtenerVecinos(Indice, P) :-
     (Y=:=0 -> PosIzquierda = [] ; PosIzquierda = [X,Izquierda]),
     ((X=:=0;Y=:=0) -> PosArrIz = [] ; PosArrIz = [Arriba,Izquierda]),
     ((X=:=0;Y=:=4) -> PosArrDr = [] ; PosArrDr = [Arriba,Derecha]),
-    ((X=:=4;Y=:=0) -> PosAbjIz = [] ; PosAbjIz = [Abajo,Izquierda]),
-    ((X=:=4;Y=:=4) -> PosAbjDr = [] ; PosAbjDr = [Abajo,Derecha]),
+    ((X=:=8;Y=:=0) -> PosAbjIz = [] ; PosAbjIz = [Abajo,Izquierda]),
+    ((X=:=8;Y=:=4) -> PosAbjDr = [] ; PosAbjDr = [Abajo,Derecha]),
     findall(N, (
         member(N, [PosArriba,PosAbajo,PosDerecha,PosIzquierda,PosArrIz,PosArrDr,PosAbjIz,PosAbjDr]),
         dif(N,[]))
@@ -367,9 +332,9 @@ obtenerVecinos(Indice, P) :-
 % Predicado principal para ejecutar DFS desde el índice A
 % buscando los vecinos validos y visitando aquellos que no se hayan visitado.
 % Retorna una lista con los indices visitados
-dfsDesdeHasta(Grid, A, Buscado, VisitadosFinales) :-
-    explorarVecinos(Grid, A, Buscado,Vecinos),
-    dfs(Grid, Vecinos, Buscado, [A], VisitadosFinales).
+dfsDesdeHasta(Grid, A, MinPot, VisitadosFinales) :-
+    explorarVecinos(Grid, A, MinPot,Vecinos),
+    dfs(Grid, Vecinos, MinPot, [A], VisitadosFinales).
 
 %caso base de la ejecucion de booster hasta 40 tamaño de la lista
 booster(_,40,Acumulador,VisitadosFinales):-
@@ -399,8 +364,231 @@ boosterShell(Grid,GridResultado,Suma):-
     eliminarGruposInvalidos(ListaGrupos,_Acc,GruposValidos),
     generarGrillaFinalBooster(GruposValidos,Grid,_,Suma,GridResultado).
 
+%-----------------------%Proyecto2%------------------------------------------
+
+sumarElemCamino(List, Sum) :-
+    sumarElemCamino(List, 0, Sum).
+
+sumarElemCamino([], Acc, Acc).
+sumarElemCamino([X|Xs], Acc, Sum) :-
+    NewAcc is Acc + X,
+    sumarElemCamino(Xs, NewAcc, Sum).
+
+% Predicado auxiliar para comprobar si un movimiento es vÃ¡lido
+movimientoValidoPath(Grid, Valor, Indice) :-
+    Indice >= 0,
+    length(Grid, L),
+    Indice < L,
+    ValorX2 is Valor*2,
+    (nth0(Indice, Grid, ValorX2);nth0(Indice, Grid, Valor)).
+
+traducirPathAIndicesReverso([], _, Acc, L) :-
+    reverse(Acc, L).
+
+% For the recursive case, add the new position to the front of the accumulator.
+traducirPathAIndicesReverso([X|Xs], Col, Acc, L) :-
+    obtenerIndice(X, Pos),
+    traducirPathAIndicesReverso(Xs, Col, [Pos|Acc], L).
+
+
+traducirPathAIndicesReverso([X|[]], _, P, L) :-
+    obtenerIndice(X, Pos),
+    sort(P, Sorted),
+    append([Pos],Sorted,NewL),
+    L = NewL.
+
+%recibe un indicey devuelve una lista de indices
+obtenerVecinosUnico(Indice, P) :-
+    % Nos aseguramos que Indice Sea valido (i.e., divisible by 5)
+    % obtiene los valores de X e Y para trabajar como matriz
+    X is Indice // 5,
+    Y is Indice - (X * 5),
+    Arriba is X-1,
+    Abajo is X+1,
+    Derecha is Y+1,
+    Izquierda is Y-1,
+    (X=:=0 -> PosArriba = [] ; PosArriba = [Arriba,Y]),
+    (X=:=8 -> PosAbajo = [] ; PosAbajo = [Abajo,Y]),
+    (Y=:=4 -> PosDerecha = [] ; PosDerecha = [X,Derecha]),
+    (Y=:=0 -> PosIzquierda = [] ; PosIzquierda = [X,Izquierda]),
+    ((X=:=0;Y=:=0) -> PosArrIz = [] ; PosArrIz = [Arriba,Izquierda]),
+    ((X=:=0;Y=:=4) -> PosArrDr = [] ; PosArrDr = [Arriba,Derecha]),
+    ((X=:=8;Y=:=0) -> PosAbjIz = [] ; PosAbjIz = [Abajo,Izquierda]),
+    ((X=:=8;Y=:=4) -> PosAbjDr = [] ; PosAbjDr = [Abajo,Derecha]),
+    findall(N, (
+        member(N, [PosArriba,PosAbajo,PosDerecha,PosIzquierda,PosArrIz,PosArrDr,PosAbjIz,PosAbjDr]),
+        not(N = [])),
+        Vecinos),
+    	once(traducirPathAIndicesReverso(Vecinos,5,[],P)).%por esto se llama unico
+
+% Predicado para explorar vecinos
+%  Busca los vecinos del indice dado, verifica si son movimientos validos 
+%  y los devuelve en una lista
+explorarVecinosParaElPath(Grid, Indice, Buscado, Vecinos) :-
+    obtenerVecinosUnico(Indice, VecinosObtenidos),
+    findall(N, 
+            (
+                member(N, VecinosObtenidos), 
+                (
+                    movimientoValidoPath(Grid, Buscado,N) 
+                    -> true 
+                    ; fail 
+                )
+            )
+           , Vecinos).
+
+
+%Genera la suma de los valores de los indices de un camino
+generarSumaParcialCamino(List,Grid,Sum) :-
+    generarSumaParcialCamino(List,Grid,0,Sum).
+
+generarSumaParcialCamino([],_,Acc,Acc).
+
+generarSumaParcialCamino([C|Cs],Grid,Acc,Sum) :-
+    nth0(C,Grid,V),
+    NewAcc is Acc + V,
+    generarSumaParcialCamino(Cs,Grid,NewAcc,Sum).
+
+%Compara dos caminos y se queda con el que tenga una suma mayor
+compararCaminos(Grid,ListaIndices1,ListaIndices2,Resultado):-
+    generarSumaParcialCamino(ListaIndices1,Grid,Valor1),
+    generarSumaParcialCamino(ListaIndices2,Grid,Valor2),
+    ((Valor1 >Valor2)->  Resultado = ListaIndices1; Resultado=ListaIndices2).
+
+%busca el camino con mayor suma dentro de una lista de camino
+maxCamino(_,[Camino], Camino).
+maxCamino(Grid,[Camino1, Camino2|Resto], MaxCamino) :-
+    compararCaminos(Grid, Camino1, Camino2, MejorCamino),
+    maxCamino(Grid,[MejorCamino|Resto], MaxCamino).
+
+%auxiliar de vecinos para el finder de caminos
+finderAux(Grid, [V|Vs], Acc, Caminos) :-
+    (not(member(V, Acc)) ->%si no es un miembro del acumulador (si no hemos pasado por el indice)
+        NuevoAcumulador = [V|Acc],%lo agregamos al acumulador
+        finderCaminoGrande(Grid, V, NuevoAcumulador, SubCaminos),%buscamos los subcaminos que salen de ese indice
+        finderAux(Grid, Vs, Acc, OtrosCaminos),%buscamos en los vecinos y lo guardamos en el otros caminos
+        append(SubCaminos, OtrosCaminos, Caminos)%guardamos los caminos
+    ; %si ya pasamos por el indice, lo ignoramos y pasamos a los sigueintes vecinos
+        finderAux(Grid, Vs, Acc, Caminos)
+    ).
+
+finderAux(_, [], _, []).
+
+%cascara para la ejecucion del finder
+finderCaminoGrandeShell(Grid,Indice,Resultado):-
+    finderCaminoGrande(Grid,Indice,[Indice],Resultado).
+
+%busca el/los camininos a partir de in indice dado
+finderCaminoGrande(_, _, [], []).
+
+finderCaminoGrande(Grid, Indice, Acc, Caminos) :-
+    nth0(Indice, Grid, Valor),%buscamos el valor del indice
+    explorarVecinosParaElPath(Grid, Indice, Valor, Vecinos), %vemos cuales son sus vecinos
+    finderAux(Grid, Vecinos, Acc, SubCaminos), %buscamos en esos vecinos
+    %si no tiene subcaminos guardamos el acc(es un final de camino), caso contratio guardamos el resto de caminos
+    (SubCaminos = [] -> Caminos = [Acc]; Caminos = SubCaminos).
+
+%toma todos los caminos encontrados y se queda con el mejor
+findCamino(Grid,Indice,Resultado) :-
+    finderCaminoGrandeShell(Grid, Indice, Caminos),
+    maxCamino(Grid,Caminos, Resultado).
+
+%predicado principal de inicio de la busqueda 
+findCaminoMaximo(Grid, Indice,Resultado) :-
+    findCamino(Grid, Indice,Resultado).
+
+
+    findCaminoMaximoAll(Grid, CurrentIndex, MaxPath, Result) :-
+        length(Grid, Length),
+        (CurrentIndex < Length -> % If the current index is less than the length of the grid
+            findCaminoMaximo(Grid, CurrentIndex, Path), % Find the maximum path for the current index
+            length(Path,LargoPath),
+            generarSumaParcialCamino(Path, Grid, Sum), % Calculate the sum of the path
+            generarSumaParcialCamino(MaxPath, Grid, MaxSum), % Calculate the sum of the current maximum path
+            (((Sum > MaxSum),(LargoPath>1)) -> % If the sum of the path is greater than the sum of the current maximum path
+                NextIndex is CurrentIndex + 1, % Increment the current index
+                findCaminoMaximoAll(Grid, NextIndex, Path, Result) % Update the maximum path and continue with the next index
+            ;
+                NextIndex is CurrentIndex + 1, % Increment the current index
+                findCaminoMaximoAll(Grid, NextIndex, MaxPath, Result) % Keep the current maximum path and continue with the next index
+            )
+        ;	%retorno
+            reverse(MaxPath,Result) % If the current index is not less than the length of the grid, return the current maximum path
+        ).
+    
+
+    
+    
+    findCaminoMaximoAdyacente(Grid, CurrentIndex, MaxPath, Result) :-
+        length(Grid, Length),
+        (CurrentIndex < Length -> % If the current index is less than the length of the grid
+            findCaminoMaximo(Grid, CurrentIndex, Path), % Find the maximum path for the current index
+            length(Path,LargoPath),
+            generarSumaParcialCamino(Path, Grid, Sum), % Calculate the sum of the path
+            generarSumaParcialCamino(MaxPath, Grid, MaxSum), % Calculate the sum of the current maximum path
+            (((Sum > MaxSum),(LargoPath>1),checkAdyacentesPath(Grid,Path)) -> % If the sum of the path is greater than the sum of the current maximum path and is valid
+                NextIndex is CurrentIndex + 1, % Increment the current index
+                findCaminoMaximoAdyacente(Grid, NextIndex, Path, Result) % Update the maximum path and continue with the next index
+            ;
+                NextIndex is CurrentIndex + 1, % Increment the current index
+                findCaminoMaximoAdyacente(Grid, NextIndex, MaxPath, Result) % Keep the current maximum path and continue with the next index
+            )
+        ;
+            reverse(MaxPath,Result) % If the current index is not less than the length of the grid, return the current maximum path
+        ).
+    
+        findCaminoMaximoShell(Grid,Result):-findCaminoMaximoAll(Grid, 0, [], R),
+            indicesToCoord(R,Result).
+    
+        findCaminoMaximoAdyacenteShell(Grid,Result):-findCaminoMaximoAdyacente(Grid,0,[],R),
+            indicesToCoord(R,Result).
+    
+        indiceToCoord(Indice,Coord):-
+            X is Indice // 5,
+            Y is Indice - (X * 5),
+            Coord = [X|[Y]].
+    
+        indicesToCoord([I|Is],[C|Cs]):-
+            indiceToCoord(I,C),
+            indicesToCoord(Is,Cs).
+    
+        indicesToCoord([],[]).
+
+
+%[Head|Cs] es el camino que estamos chequeando al reves
+%esto porque findCamino devuelve el camino al reves y es mas comodo trabajar
+checkAdyacentesPath(Grid, [Head|Hs]):-
+    obtenerVecinosValidosPath(Grid, [Head|Hs], VecinosValidosHead),
+    length(VecinosValidosHead,LargoVVH),
+    %si tiene vecinos que cumplen(si no esta vacia)
+    (LargoVVH =\= 0 -> true ; false).
+
+obtenerVecinosValidosPath(Grid, [Head|Hs], VecinosValidosHead):-
+    obtenerVecinosUnico(Head,VecinosHead),
+    generarBloque([Head|Hs],Grid,_,Bloque),!,
+    findall(H, %encuentra vecinos H
+            	(member(H,VecinosHead),%que pertenezcan a los vecinos
+                not(member(H,[Head|Hs])),%que no pertenezcan al camino
+                 nth0(H,Grid,ValorH),%y que cuyo valor de bloque dentro de la grilla
+                 ValorH =:= Bloque),% sea igual al generado por el camino
+            VecinosValidosHead).%end findall
+
+    
+
+
+
+%Predicados principales
+
+ayudaMovidaMaxima(Grid,Resultado):-
+findCaminoMaximoShell(Grid,Resultado).
+
+ayudaMaximaIguales(Grid,Resultado):-
+findCaminoMaximoAdyacenteShell(Grid,Resultado).
+
+
+
 botonBooster(Grids,_,_,RGrid) :-
-    boosterShell(Grids,GRet,_), %si quieres la suma reemplaza el "_"
+    boosterShell(Grids,GRet,_),
     enlazarGrillas([Grids],[GRet],RGr),
     generarListasDeColumnas(GRet,Gresultado),
     agregarShell(Gresultado,Retorna),
@@ -417,9 +605,3 @@ join(Grid, Col, Path, RGrids):-
     enlazarGrillas(RG,[Resultado],RG2),
     reemplazarPorRandom(Resultado,_,Re),
     enlazarGrillas(RG2,[Re],RGrids).
-
-
-
-    
- 
-
