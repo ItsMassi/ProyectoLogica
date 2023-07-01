@@ -384,8 +384,7 @@ movimientoValidoPath(Grid, Valor, Indice) :-
 
 traducirPathAIndicesReverso([], _, Acc, L) :-
     reverse(Acc, L).
-
-% For the recursive case, add the new position to the front of the accumulator.
+%caso recursivo: añade la nueva posicion al frente del acumulador
 traducirPathAIndicesReverso([X|Xs], Col, Acc, L) :-
     obtenerIndice(X, Pos),
     traducirPathAIndicesReverso(Xs, Col, [Pos|Acc], L).
@@ -399,7 +398,7 @@ traducirPathAIndicesReverso([X|[]], _, P, L) :-
 
 %recibe un indicey devuelve una lista de indices
 obtenerVecinosUnico(Indice, P) :-
-    % Nos aseguramos que Indice Sea valido (i.e., divisible by 5)
+    % Nos aseguramos que Indice Sea valido (i.e., divisible por 5)
     % obtiene los valores de X e Y para trabajar como matriz
     X is Indice // 5,
     Y is Indice - (X * 5),
@@ -498,64 +497,64 @@ findCaminoMaximo(Grid, Indice,Resultado) :-
     findCamino(Grid, Indice,Resultado).
 
 
-    findCaminoMaximoAll(Grid, CurrentIndex, MaxPath, Result) :-
-        length(Grid, Length),
-        (CurrentIndex < Length -> % If the current index is less than the length of the grid
-            findCaminoMaximo(Grid, CurrentIndex, Path), % Find the maximum path for the current index
-            length(Path,LargoPath),
-            generarSumaParcialCamino(Path, Grid, Sum), % Calculate the sum of the path
-            generarSumaParcialCamino(MaxPath, Grid, MaxSum), % Calculate the sum of the current maximum path
-            (((Sum > MaxSum),(LargoPath>1)) -> % If the sum of the path is greater than the sum of the current maximum path
-                NextIndex is CurrentIndex + 1, % Increment the current index
-                findCaminoMaximoAll(Grid, NextIndex, Path, Result) % Update the maximum path and continue with the next index
-            ;
-                NextIndex is CurrentIndex + 1, % Increment the current index
-                findCaminoMaximoAll(Grid, NextIndex, MaxPath, Result) % Keep the current maximum path and continue with the next index
-            )
-        ;	%retorno
-            reverse(MaxPath,Result) % If the current index is not less than the length of the grid, return the current maximum path
-        ).
+findCaminoMaximoAll(Grid, IndiceActual, MaxPath, Resultado) :-
+    length(Grid, Largo),
+    (IndiceActual < Largo -> %si el indice actual es menor que el largo de la grid
+        findCaminoMaximo(Grid, IndiceActual, Path), %encuentra el camino maximo desde ese indice
+        length(Path,LargoPath),
+        generarSumaParcialCamino(Path, Grid, Sum), % calcula la suma del nuevo Camino
+        generarSumaParcialCamino(MaxPath, Grid, MaxSum), %calcula la suma del Camino maximo actual
+        (((Sum > MaxSum),(LargoPath>1)) -> % si la suma es mayor a la del camino actual y el nuevo camino no es un solo bloque
+            NextIndice is IndiceActual + 1,
+            findCaminoMaximoAll(Grid, NextIndice, Path, Resultado) %Actualiza el camino maximo actual
+        ;
+            NextIndice is IndiceActual + 1,
+            findCaminoMaximoAll(Grid, NextIndice, MaxPath, Resultado) %guarda el camino maximo actual
+        )
+    ;	%retorno
+        reverse(MaxPath,Resultado)
+    ).
     
 
     
     
-        findCaminoMaximoAdyacente(Grid, CurrentIndex, MaxPath, Result) :-
-            length(Grid, Length),
-            (CurrentIndex < Length -> % If the current index is less than the length of the grid
-                findCaminoMaximo(Grid, CurrentIndex, Path), % Find the maximum path for the current index
-                length(Path,LargoPath),
-                generarSumaParcialCamino(Path, Grid, Sum), % Calculate the sum of the path
-                generarSumaParcialCamino(MaxPath, Grid, MaxSum), % Calculate the sum of the current maximum path
-                reverse(Path,RPath),
-                (((Sum > MaxSum),(LargoPath>1),
-                     checkAdyacentesPath(Grid,RPath)) 
-                -> % If the sum of the path is greater than the sum of the current maximum path and is valid
-                    NextIndex is CurrentIndex + 1, % Increment the current index
-                    findCaminoMaximoAdyacente(Grid, NextIndex, Path, Result) % Update the maximum path and continue with the next index
-                ;
-                    NextIndex is CurrentIndex + 1, % Increment the current index
-                    findCaminoMaximoAdyacente(Grid, NextIndex, MaxPath, Result) % Keep the current maximum path and continue with the next index
-                )
-            ;
-                reverse(MaxPath,Result) % If the current index is not less than the length of the grid, return the current maximum path
-            ).
+findCaminoMaximoAdyacente(Grid, IndiceActual, MaxPath, Resultado) :-
+    length(Grid, Length),
+    (IndiceActual < Length -> %si el indice actual es menor que el largo de la grid
+        findCaminoMaximo(Grid, IndiceActual, Path), %encuentra el camino maximo desde ese indice
+        length(Path,LargoPath),
+        generarSumaParcialCamino(Path, Grid, Sum), % calcula la suma del nuevo Camino
+        generarSumaParcialCamino(MaxPath, Grid, MaxSum), %calcula la suma del Camino maximo actual
+        reverse(Path,RPath), %guardamos una version inversa del path encontrado
+        (((Sum > MaxSum),(LargoPath>1),% si la suma es mayor a la del camino actual, el nuevo camino no es un solo bloque
+                checkAdyacentesPath(Grid,RPath)) %y los adyacentes al final de simular gravedad del final de ese path
+        -> 
+            NextIndice is IndiceActual + 1, 
+            findCaminoMaximoAdyacente(Grid, NextIndice, Path, Resultado)%Actualiza el camino maximo actual
+        ;
+            NextIndice is IndiceActual + 1,
+            findCaminoMaximoAdyacente(Grid, NextIndice, MaxPath, Resultado)%guarda el camino maximo actual
+        )
+    ;%retorno
+        reverse(MaxPath,Resultado) 
+    ).
     
-        findCaminoMaximoShell(Grid,Result):-findCaminoMaximoAll(Grid, 0, [], R),
-            indicesToCoord(R,Result).
-    
-        findCaminoMaximoAdyacenteShell(Grid,Result):-findCaminoMaximoAdyacente(Grid,0,[],R),
-            indicesToCoord(R,Result).
-    
-        indiceToCoord(Indice,Coord):-
-            X is Indice // 5,
-            Y is Indice - (X * 5),
-            Coord = [X|[Y]].
-    
-        indicesToCoord([I|Is],[C|Cs]):-
-            indiceToCoord(I,C),
-            indicesToCoord(Is,Cs).
-    
-        indicesToCoord([],[]).
+findCaminoMaximoShell(Grid,Resultado):-findCaminoMaximoAll(Grid, 0, [], R),
+    indicesToCoord(R,Resultado).
+
+findCaminoMaximoAdyacenteShell(Grid,Resultado):-findCaminoMaximoAdyacente(Grid,0,[],R),
+    indicesToCoord(R,Resultado).
+
+indiceToCoord(Indice,Coord):-
+    X is Indice // 5,
+    Y is Indice - (X * 5),
+    Coord = [X|[Y]].
+
+indicesToCoord([I|Is],[C|Cs]):-
+    indiceToCoord(I,C),
+    indicesToCoord(Is,Cs).
+
+indicesToCoord([],[]).
 
 
 %[Head|Cs] es el camino que estamos chequeando al reves
@@ -563,12 +562,12 @@ findCaminoMaximo(Grid, Indice,Resultado) :-
 checkAdyacentesPath(Grid, [Head|Hs]):-
     sort([Head|Hs], Sorted),
     reverse([Head|Hs],[RHead|_]),
-    generarBloque([Head|Hs],Grid,_,Bloque),
+    generarBloque([Head|Hs],Grid,_,Bloque),%generamos el bloque que daria el path
     eliminarBloque(Sorted, Grid, [], GridMod, 0),%eliminamos los bloques
     replace(GridMod,RHead,1,GridUnoCeros),%marcamos el final del camino
-    generarListasDeColumnas(GridUnoCeros,ColumnasGravedad),
-    agregarShell(ColumnasGravedad,GridGravedadSimulada),
-    obtenerVecinosValidosPath(GridGravedadSimulada,VecinosValidosHead,Bloque),
+    generarListasDeColumnas(GridUnoCeros,ColumnasGravedad),%paso 1 simulacion de gravedad
+    agregarShell(ColumnasGravedad,GridGravedadSimulada),%paso 2 simulacion de gravedad
+    obtenerVecinosValidosPath(GridGravedadSimulada,VecinosValidosHead,Bloque),%vemos si los vecinos de la posicion marada con 1 son validas
     length(VecinosValidosHead,LargoVVH),!,
     %si tiene vecinos que cumplen(si no esta vacia)
     LargoVVH =\= 0.
