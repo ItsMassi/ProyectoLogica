@@ -80,6 +80,20 @@ function Game() {
       }
     });
   }
+  function ayudaAdyacentesHandler() {
+    
+    const gridS = JSON.stringify(grid);
+    const queryS = "ayudaMaximaAdyacentes(" + gridS + ", Camino)";  
+    setWaiting(true);
+    pengine.query(queryS, (success, response) => {
+      console.log(response)
+      if (success) {
+        setPath(response['Camino']);
+      } else {
+        setWaiting(false);
+      }
+    });
+  }
   
 
   /**
@@ -152,7 +166,8 @@ function Game() {
         </div>
   
         <button className="botonBooster" onClick={boosterHandler}>Booster</button>
-        <button className="botonAyuda1" onClick={ayudaMaximaHandler}>Movida maxima</button>
+        <button className="botonAyuda1" onClick={ayudaMaximaHandler}>Movida Maxima</button>
+        <button className="botonAyuda2" onClick={ayudaAdyacentesHandler}>Movida maxima Adyacentes</button>
         
       
       </div>

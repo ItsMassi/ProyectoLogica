@@ -3,7 +3,7 @@
     botonBooster/4,
     join/4,
     ayudaMovidaMaxima/2,
-    ayudaMaximaIguales/2
+    ayudaMaximaAdyacentes/2
     
 
 
@@ -519,23 +519,26 @@ findCaminoMaximo(Grid, Indice,Resultado) :-
 
     
     
-    findCaminoMaximoAdyacente(Grid, CurrentIndex, MaxPath, Result) :-
-        length(Grid, Length),
-        (CurrentIndex < Length -> % If the current index is less than the length of the grid
-            findCaminoMaximo(Grid, CurrentIndex, Path), % Find the maximum path for the current index
-            length(Path,LargoPath),
-            generarSumaParcialCamino(Path, Grid, Sum), % Calculate the sum of the path
-            generarSumaParcialCamino(MaxPath, Grid, MaxSum), % Calculate the sum of the current maximum path
-            (((Sum > MaxSum),(LargoPath>1),checkAdyacentesPath(Grid,Path)) -> % If the sum of the path is greater than the sum of the current maximum path and is valid
-                NextIndex is CurrentIndex + 1, % Increment the current index
-                findCaminoMaximoAdyacente(Grid, NextIndex, Path, Result) % Update the maximum path and continue with the next index
+        findCaminoMaximoAdyacente(Grid, CurrentIndex, MaxPath, Result) :-
+            length(Grid, Length),
+            (CurrentIndex < Length -> % If the current index is less than the length of the grid
+                findCaminoMaximo(Grid, CurrentIndex, Path), % Find the maximum path for the current index
+                length(Path,LargoPath),
+                generarSumaParcialCamino(Path, Grid, Sum), % Calculate the sum of the path
+                generarSumaParcialCamino(MaxPath, Grid, MaxSum), % Calculate the sum of the current maximum path
+                reverse(Path,RPath),
+                (((Sum > MaxSum),(LargoPath>1),
+                     checkAdyacentesPath(Grid,RPath)) 
+                -> % If the sum of the path is greater than the sum of the current maximum path and is valid
+                    NextIndex is CurrentIndex + 1, % Increment the current index
+                    findCaminoMaximoAdyacente(Grid, NextIndex, Path, Result) % Update the maximum path and continue with the next index
+                ;
+                    NextIndex is CurrentIndex + 1, % Increment the current index
+                    findCaminoMaximoAdyacente(Grid, NextIndex, MaxPath, Result) % Keep the current maximum path and continue with the next index
+                )
             ;
-                NextIndex is CurrentIndex + 1, % Increment the current index
-                findCaminoMaximoAdyacente(Grid, NextIndex, MaxPath, Result) % Keep the current maximum path and continue with the next index
-            )
-        ;
-            reverse(MaxPath,Result) % If the current index is not less than the length of the grid, return the current maximum path
-        ).
+                reverse(MaxPath,Result) % If the current index is not less than the length of the grid, return the current maximum path
+            ).
     
         findCaminoMaximoShell(Grid,Result):-findCaminoMaximoAll(Grid, 0, [], R),
             indicesToCoord(R,Result).
@@ -558,22 +561,33 @@ findCaminoMaximo(Grid, Indice,Resultado) :-
 %[Head|Cs] es el camino que estamos chequeando al reves
 %esto porque findCamino devuelve el camino al reves y es mas comodo trabajar
 checkAdyacentesPath(Grid, [Head|Hs]):-
-    obtenerVecinosValidosPath(Grid, [Head|Hs], VecinosValidosHead),
-    length(VecinosValidosHead,LargoVVH),
+    sort([Head|Hs], Sorted),
+    reverse([Head|Hs],[RHead|_]),
+    generarBloque([Head|Hs],Grid,_,Bloque),
+    eliminarBloque(Sorted, Grid, [], GridMod, 0),%eliminamos los bloques
+    replace(GridMod,RHead,1,GridUnoCeros),%marcamos el final del camino
+    generarListasDeColumnas(GridUnoCeros,ColumnasGravedad),
+    agregarShell(ColumnasGravedad,GridGravedadSimulada),
+    obtenerVecinosValidosPath(GridGravedadSimulada,VecinosValidosHead,Bloque),
+    length(VecinosValidosHead,LargoVVH),!,
     %si tiene vecinos que cumplen(si no esta vacia)
-    (LargoVVH =\= 0 -> true ; false).
+    LargoVVH =\= 0.
 
-obtenerVecinosValidosPath(Grid, [Head|Hs], VecinosValidosHead):-
-    obtenerVecinosUnico(Head,VecinosHead),
-    generarBloque([Head|Hs],Grid,_,Bloque),!,
+obtenerVecinosValidosPath(Grid, VecinosValidosHead,Bloque):-
+    nth0(IndiceUno,Grid,1),%buscamos el indice que es uno (nuestra marca)
+    obtenerVecinosUnico(IndiceUno,VecinosHead),!,
     findall(H, %encuentra vecinos H
             	(member(H,VecinosHead),%que pertenezcan a los vecinos
-                not(member(H,[Head|Hs])),%que no pertenezcan al camino
+                H =\= 0,%que no pertenezcan al camino
                  nth0(H,Grid,ValorH),%y que cuyo valor de bloque dentro de la grilla
                  ValorH =:= Bloque),% sea igual al generado por el camino
             VecinosValidosHead).%end findall
 
     
+replace(L,I, E, K) :-
+  nth0(I, L, _, R),
+  nth0(I, K, E, R).
+
 
 
 
@@ -582,7 +596,7 @@ obtenerVecinosValidosPath(Grid, [Head|Hs], VecinosValidosHead):-
 ayudaMovidaMaxima(Grid,Resultado):-
 findCaminoMaximoShell(Grid,Resultado).
 
-ayudaMaximaIguales(Grid,Resultado):-
+ayudaMaximaAdyacentes(Grid,Resultado):-
 findCaminoMaximoAdyacenteShell(Grid,Resultado).
 
 
